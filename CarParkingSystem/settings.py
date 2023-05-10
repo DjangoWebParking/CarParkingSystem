@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'rest_framework',
     # 'social_django',
-    'oauth2_provider'
+    'oauth2_provider',
+    # 'celery'
 ]
 
 
@@ -155,3 +156,18 @@ REST_FRAMEWORK ={
     'DEFAULT_AUTHENTICATION_CLASSES':(
     'oauth2_provider.contrib.rest_framework.OAuth2Authentication',)
 }
+
+
+# CELERY_BROKER_URL = 'amqp://localhost'  # or your broker URL
+# CELERY_RESULT_BACKEND = 'django-db'    # or another backend you prefer
+
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+
+# CELERY_BEAT_SCHEDULE = {
+#     'my-task-name': {
+#         'task': 'myapp.tasks.my_task_function',
+#         'schedule': 10.0,  # run every 10 seconds
+#     },
+# }

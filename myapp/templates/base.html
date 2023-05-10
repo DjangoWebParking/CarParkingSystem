@@ -103,10 +103,10 @@
 
 
             <span>{{ user.username }}, 
-                 {% if user.is_superuser or user.is_admin %}
+                 {% if user.is_superuser or user.is_admin %}- 
                  Admin
             {% else %}     
-             Security  
+             USER 
             {% endif %}
             </span>
         </a>

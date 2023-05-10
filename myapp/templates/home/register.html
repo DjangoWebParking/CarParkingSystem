@@ -72,7 +72,7 @@
 						<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
 					</div>
 					<input name="password2" class="form-control" placeholder="Repeat password" type="password">
-					{% for error in form.confirm_password.errors %}
+					{% for error in form.password2.errors %}
 					<div class="invalid-feedback">{{ error }}</div>
 					{% endfor %}
 				</div> <!-- form-group// -->

@@ -89,8 +89,8 @@ urlpatterns = [
     path('show_home/', views.show_home, name='show_home'),
     path('exit/', views.exit, name='exit'),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
-    path('email_verification/<str:token>/',
+    path('email_verification/<str:token>',
          views.email_verification, name='email_verification'),
-    path('email_notification/', views.email_verification, name='success_message')
+    path('success_message/', views.show_success_signup, name='success_message')
     # path('reserve_slot/<int:pk>',views.)email_verification
 ]

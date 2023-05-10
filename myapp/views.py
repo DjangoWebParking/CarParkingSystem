@@ -65,6 +65,10 @@ from django.contrib.auth.models import Group
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .serializers import CarSerializer
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+from jinja2 import Environment, FileSystemLoader
 
 from .forms import CreateParkingRecordForm, MyRegistrationForm
 from .forms import EmailVerificationForm
@@ -137,7 +141,23 @@ def show_signup(request):
 #     recipient_list = [user.email]
 #     send_mail(subject, plain_message, from_email,
 #               recipient_list, html_message=message)
-# from django.http import HttpResponseBadRequest
+
+# from datetime import timedelta
+# from celery import shared_task
+# from django.utils import timezone
+# from django.contrib.auth import get_user_model
+
+# @shared_task
+# def delete_unconfirmed_user(user_email):
+#     UserModel = get_user_model()
+#     try:
+#         user = UserModel.objects.get(id=user_email, is_active=False)
+#         created_at = user.date_joined
+#         if timezone.now() - created_at > timedelta(seconds=120):
+#             user.delete()
+#     except UserModel.DoesNotExist:
+#         pass
+
 class SignupView(FormView):
     model = get_user_model()
     template_name = 'home/register.html'
@@ -145,14 +165,7 @@ class SignupView(FormView):
     success_url = reverse_lazy('login')
 
     def form_valid(self, form):
-        # UserModel = get_user_model()
-        # # user = UserModel.objects.create_user(**form.cleaned_data)
-        # # user.is_active = False
-        # # user.save()
-        # # Gửi email xác nhận
-        # send_email_verification(user)
         return self.form_valid(form)
-        
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
@@ -169,7 +182,9 @@ class SignupView(FormView):
             )
             user.is_active = False
             user.save()
+            # request.session['token'] = user.token ///Object of type UUID is not JSON serializable
             send_email_verification(user)
+            # delete_unconfirmed_user.apply_async(args=[user.email], countdown=120) # thực thi task sau 1 ngày
             # send_mail(
             #     'Activate Email Form',
             #     'Thời gian để kích hoạt là 5phuts',
@@ -181,74 +196,49 @@ class SignupView(FormView):
             return redirect('success_message')
         else:
             print("invalid")
-            return self.form_invalid(form)
+            return redirect('signup')
+        
+from jinja2 import Environment, PackageLoader
+from django.middleware.csrf import get_token
 
-    # def post(self,request):
-    #     email = request.POST.get('email')
-    #     username = request.POST.get('username')
-    #     password1 = request.POST.get('password')
-    #     password2 = request.POST.get('confirm_password')
-
-    #     if User.objects.filter(email=email).exists():
-    #         messages.error(request, 'Email đã được sử dụng!')
-    #         return redirect('signup')
-
-    #     if password1 == password2:
-    #         user = User.objects.create_user(
-    #             email=email,
-    #             username=username,
-    #             password=password1,
-    #         )
-    #         user.is_active = False
-    #         user.save()
-    #         send_email_verification(user)
-    #         # send_mail(
-    #         #     'Activate Email Form',
-    #         #     'Thời gian để kích hoạt là 5phuts',
-    #         #     'settings.EMAIL_HOST_USER',
-    #         #     [user.email,'letrongbach02@gmail.com','benphantom102@gmail.com'],
-    #         #     fail_silently=False
-    #         # )
-
-    #         # Chuyển hướng đến trang thông báo đăng ký thành công
-    #         return redirect('email_notification')
-    #     else:
-    #         # Hiển thị thông báo lỗi nếu mật khẩu không trùng khớp
-    #         # return render(request, 'view_signup', {'error': 'Mật khẩu không trùng khớp!'})
-    #         messages.error(request,  'Mật khẩu không trùng khớp!')
-    #         return redirect('signup')
-
-
-def send_email_verification(user):
-    from_email = 'nhom9qlda2223@gmail.com'  # nhập email của bạn vào đây
-    to_email = user.email
-    token = user.token
-    # Gửi email với token xác nhận
-    message = 'Click link below to verify your email:\n\n' + \
-        'http://localhost:8000/email_verification/' + str(token)
+def send_email_verification(user):  
+    env = Environment(loader=PackageLoader('myapp', 'templates'))
+    template = env.get_template('home/email_verification.html')
+    verification_url = 'http://localhost:8000/email_verification/' + \
+        str(user.token)
+    # form_action = 'http://localhost:8000/email_verification/', form_action=form_action
+    message = template.render(
+        user=user, verification_url=verification_url)
+    msg = MIMEMultipart()
+    msg['Subject'] = 'Activate your account'
+    msg['From'] = 'nhom9qlda2223@gmail.com'  # nhập email của bạn vào đây
+    msg['To'] = user.email
+    part = MIMEText(message, 'html')
+    msg.attach(part)
     with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
         smtp.starttls()
         # nhập mật khẩu email của bạn vào đây
-        smtp.login(from_email, 'zpqxzpdcbzqgxefk')
-        smtp.sendmail(from_email, to_email, message)
+        smtp.login('nhom9qlda2223@gmail.com', 'zpqxzpdcbzqgxefk')
+        smtp.sendmail('nhom9qlda2223@gmail.com',
+                      user.email, msg.as_string())
 
 
-def email_verification(request):
-    form = EmailVerificationForm(request.GET)
+def email_verification(request,token):
+    # csrf_token = get_token(request) ,'csrf_token':csrf_token
+    form = EmailVerificationForm({'token': token})
     if form.is_valid():
-        token = form.cleaned_data['token']
-        print(token)
         user = User.objects.get(token=token)
         user.is_active = True
         user.save()
-        login(request, user)
+        # login(request, user)
         return redirect('login')
     else:
+        # token = get_token(request)
         return render(request, 'home/email_verification.html', {'form': form})
 
 
-def email_notification(request):
-    return render(request, 'home/email_notification.html')
+def show_success_signup(request):
+    return render(request, 'home/success_message.html')
 
 
 def home(request):
