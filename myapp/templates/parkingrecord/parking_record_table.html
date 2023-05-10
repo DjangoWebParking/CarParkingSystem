@@ -1,0 +1,105 @@
+{% block content %}
+<div id="content-wrapper">
+    <div class="container-fluid">
+
+        <!-- <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="#">List Of Cars</a>
+            </li>
+        </ol> -->
+        <h1 class="text-center">History Parking List</h1>
+        <div class="card mb-3">
+            <div class="card-header">
+                <button type="button" class="bs-modal btn btn-sm btn-primary" id="addParkingRecordBtn"
+                    data-form-url="{% url 'create_parking_record' %}">
+                    <span class="fa fa-plus"> Add parking record</span>
+                </button>
+            </div>
+            <div class="card-header">
+                <i class="fas fa-table"></i>
+                Information
+            </div>
+            <!--  -->
+            <div class="card-body">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Parking Slot</th>
+                            <th>Car number</th>
+                            <th>Entry time</th>
+                            <th>Exit time</th>
+                            <th>Total cost</th>
+                            <th>Is paid</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pr in parkingrecords %}
+                        <tr>
+                            <td>{{ pr.id}}</td>
+                            <td>{{ pr.parking_slot.slot_number }}</td>
+                            <td>{{ pr.car_number }}</td>
+                            <td>{{ pr.entry_time}}</td>
+                            <td>{{ pr.exit_time}}</td>
+                            <td>{{ pr.total_cost }}</td>
+                            <td>{{ pr.is_paid }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-warning"
+                                    data-form-url="{% url 'update_parking_record' pr.id %}">
+                                    <span class="fa fa-pencil"> Edit</span>
+                                </button>
+
+                                <button type="button" class="bs-modal btn btn-sm btn-danger"
+                                    data-form-url="{% url 'delete_parking_record' pr.id %}">
+                                    <span class="fa fa-trash"> Delete</span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No parking record found.</td>
+                        </tr>
+                        {% endfor %}
+
+
+
+
+                    </tbody>
+                </table>
+
+
+                {% if is_paginated %}
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li><a href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+                    {% else %}
+                    <li class="disabled"><span>&laquo;</span></li>
+                    {% endif %}
+                    {% for i in paginator.page_range %}
+                    {% if page_obj.number == i %}
+                    <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+                    {% else %}
+                    <li><a href="?page={{ i }}">{{ i }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li><a href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+                    {% else %}
+                    <li class="disabled"><span>&raquo;</span></li>
+                    {% endif %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+{% endblock %}

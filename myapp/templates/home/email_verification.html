@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Email Verification</h1>
+  {% if verified %}
+    <p>Your email has been verified. Thank you!</p>
+  {% else %}
+    {% if form.errors %}
+      <p>There was an error verifying your email. Please try again.</p>
+    {% endif %}
+    <form method="get">
+      {% csrf_token %}
+      <input type="hidden" name="token" value="{{ token }}">
+      <button type="submit">Verify Email</button>
+    </form>
+  {% endif %}
+{% endblock %}

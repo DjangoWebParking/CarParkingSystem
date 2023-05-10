@@ -1,0 +1,28 @@
+{% extends 'base_user.html' %}
+{% block content %}
+
+<div class="container">
+  <h2>Parking Slots</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Slot Number</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for slot in slots %}
+      <tr>
+        <td>{{ slot.slot_number }}</td>
+        <td>{% if slot.is_available %}<span class="badge badge-success">Available</span>{% else %}<span class="badge badge-danger">Occupied</span>{% endif %}</td>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+        <!-- <td>{% if slot.is_available %}<a class="btn btn-primary" href="{% url 'reserve_slot' slot.id %}" role="button">Reserve</a>{% endif %}</td> -->

@@ -1,0 +1,83 @@
+{% block content %}
+<div id="content-wrapper">
+    <div class="container-fluid">
+
+        <!-- <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="#">List Of Cars</a>
+            </li>
+        </ol> -->
+        <h1 class="text-center">Car List</h1>
+        <div class="card mb-3">
+            <div class="card-header">
+                <button type="button" class="bs-modal btn btn-sm btn-primary"
+                    data-form-url="{% url 'create_car' %}">
+                    <span class="fa fa-plus"> Add new car</span>
+                </button>
+            </div>
+            <div class="card-header">
+                <i class="fas fa-table"></i>
+                Information
+            </div>
+            <!--  -->
+            <div class="card-body">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>License plate</th>
+                            <th>Car model</th>
+                            <th>Car color</th>
+                            <th>Owner</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for car in cars %}
+                        <tr>
+                            <td>{{ car.id }}</td>
+                            <td>{{ car.license_plate }}</td>
+                            <td>{{ car.car_model }}</td>
+                            <td>{{ car.car_color }}</td>
+                            <td>{{ car.owner.first_name }}</td>
+                            <td>
+
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary"
+                                data-toggle="modal" data-target="#car-update-modal" data-form-url="{% url 'car_view' car.pk %}"">
+        <span class=" fa fa-eye">View</span>
+                                </button>
+
+
+                                <button type="button" class="btn btn-sm btn-warning"
+                                    data-form-url="{% url 'car_update' car.pk %}">
+                                    <span class="fa fa-pencil"> Edit</span>
+                                </button>
+
+                                <button type="button" class="bs-modal btn btn-sm btn-danger"
+                                    data-form-url="{% url 'car_delete' car.pk %}">
+                                    <span class="fa fa-trash"> Delete</span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No cars found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+
+{% endblock %}
