@@ -12,24 +12,26 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 import re
 
-User= get_user_model() # QUan trọng
+User = get_user_model()  # QUan trọng
+
+
 class MyRegistrationForm(UserCreationForm):
     email = forms.EmailField(max_length=254, required=True,
                              help_text='Required. Enter a valid email address.')
-    username = forms.CharField(
-        max_length=30, required=True, help_text='Required. Enter your username.')
-    # last_name = forms.CharField(max_length=30, required=True, help_text='Required. Enter your last name.')
+    first_name = forms.CharField(
+        max_length=30, required=True, help_text='Required. Enter your first name.')
+
+    last_name = forms.CharField(max_length=30, required=True, help_text='Required. Enter your last name.')
+
     phone_number = forms.CharField(
         max_length=30, required=True, help_text='Required. Enter your phone number.')
-    # comment = forms.CharField(widget=forms.Textarea, required=False, help_text='Optional. Enter any additional comments or notes.')
-    # register_name = forms.CharField(max_length=100, required=True, help_text='Required. Enter your register name.')
     card_number = forms.CharField(
         max_length=100, required=True, help_text='Required. Enter your card number.')
 
     class Meta:
-        model = User #'confirm_password',
-        fields = ['email', 'username', 'password1','password2',
-            'first_name', 'last_name', 'phone_number', 'card_number']
+        model = User  # 'confirm_password',
+        fields = ['email', 'password1', 'password2',
+                  'first_name', 'last_name', 'phone_number', 'card_number']
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -52,15 +54,17 @@ class MyRegistrationForm(UserCreationForm):
             raise forms.ValidationError('Password must contain at least one uppercase letter.')
         if not re.search('[0-9]', password1):
             raise forms.ValidationError('Password must contain at least one number.')
-        if not re.search('[^A-Za-z0-9]', password1):
-            raise forms.ValidationError('Password must contain at least one special character.')
+        # if not re.search('[^A-Za-z0-9]', password1):
+        #     raise forms.ValidationError('Password must contain at least one special character.')
         return password1
+
     def clean_confirm_password(self):
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')
         if password1 != password2:
             raise forms.ValidationError('Mật khẩu nhập lại không trùng khớp ')
         return password2
+
 
 class EmailVerificationForm(forms.Form):
     token = forms.UUIDField()

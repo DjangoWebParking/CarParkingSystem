@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 from pathlib import Path
-from CarParkingSystem.middleware import AuthenticationMiddleware
+# from CarParkingSystem.middleware import AuthenticationMiddleware
 # from widget_tweaks.templatetags import *
 import os
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     # 'social_django',
     'oauth2_provider',
+    'imagekit',
     # 'celery'
 ]
 
@@ -147,15 +148,19 @@ EMAIL_HOST_USER = 'nhom9qlda2223@gmail.com'
 EMAIL_HOST_PASSWORD = 'zpqxzpdcbzqgxefk'
 DEFAULT_FROM_EMAIL = 'nhom9qlda2223@gmail.com'
 
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
 # AUTHENTICATION_BACKENDS = [
 #     'social_core.backends.google.GoogleOAuth2',
 #     'django.contrib.auth.backends.ModelBackend',
 # ]
 
-REST_FRAMEWORK ={
-    'DEFAULT_AUTHENTICATION_CLASSES':(
-    'oauth2_provider.contrib.rest_framework.OAuth2Authentication',)
-}
+# REST_FRAMEWORK ={
+#     'DEFAULT_AUTHENTICATION_CLASSES':(
+#     'oauth2_provider.contrib.rest_framework.OAuth2Authentication',)
+# }
 
 
 # CELERY_BROKER_URL = 'amqp://localhost'  # or your broker URL

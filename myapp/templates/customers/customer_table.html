@@ -1,7 +1,31 @@
 {% block content %}
+<div id="content-wrapper">
+    <div class="container-fluid">
 
-<div class="container-fluid">
-    <h1 class="center">Customer List</h1>
+        <!-- <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="#">List Of Cars</a>
+            </li>
+        </ol> -->
+        <h1 class="text-center">Customer List</h1>
+        <div class="card mb-3">
+            <div class="card-header">
+                <button type="button" class="bs-modal btn btn-sm btn-primary"
+                    data-form-url="{% url 'create_customer' %}">
+                    <span class="fa fa-plus"> Add new customer</span>
+                </button>
+            </div>
+            <div class="card-header">
+                <i class="fas fa-table"></i>
+                Information
+            </div>
+            <!--  -->
+            <div class="card-body">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
     <table class="table table-striped">
         <thead>
             <tr>
@@ -50,5 +74,7 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
+</div>
 </div>
 {% endblock %}

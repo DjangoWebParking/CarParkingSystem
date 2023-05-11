@@ -12,7 +12,6 @@ from .models import Customer, User
 from django.contrib import messages
 from django.urls import path, include
 
-
 from django.shortcuts import redirect, render
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -79,6 +78,9 @@ from django.views.generic import ListView, CreateView, UpdateView, FormView
 
 from django.views import View
 from django.core.mail import send_mail
+from django.contrib.auth import logout as auth_logout
+from django.shortcuts import redirect
+
 # Create your views here.
 
 from bootstrap_modal_forms.generic import (
@@ -90,75 +92,6 @@ from bootstrap_modal_forms.generic import (
     BSModalDeleteView
 )
 
-
-def show_signup(request):
-    return render(request, 'home/register.html')
-
-
-# class MyRegistrationView(RegistrationView):
-#     form_class = MyRegistrationForm
-#     template_name = 'myapp/register.html'
-#     success_url = '/thanks/'
-
-
-# def signup(request):
-#     if request.method == 'POST':
-#         email = request.POST.get('email')
-#         username = request.POST.get('username')
-#         password1 = request.POST.get('password')
-#         password2 = request.POST.get('confirm_password')
-
-#         if User.objects.filter(email=email).exists():
-#             messages.error(request, 'Email đã được sử dụng!')
-#             return redirect('view_signup')
-
-#         if password1 == password2:
-#             user = User.objects.create_user(
-#                 email=email,
-#                 username=username,
-#                 password=password1,
-#             )
-#             user.save()
-#             # group = Group.objects.get(name='Customer')
-#             # user.groups.add(group)
-#             # Chuyển hướng đến trang thông báo đăng ký thành công
-#             return redirect('login')
-#         else:
-#             # Hiển thị thông báo lỗi nếu mật khẩu không trùng khớp
-#             # return render(request, 'view_signup', {'error': 'Mật khẩu không trùng khớp!'})
-#             messages.error(request,  'Mật khẩu không trùng khớp!')
-#             return redirect('signup')
-#     else:
-#         # Hiển thị form đăng ký
-#         return render(request, 'home/signup.html')
-
-
-# def send_activation_email(user):
-#     subject = 'Activate your account'
-#     message = render_to_string('activation_email.html', {
-#         'user': user,
-#     })
-#     plain_message = strip_tags(message)
-#     from_email = 'your_email@gmail.com'
-#     recipient_list = [user.email]
-#     send_mail(subject, plain_message, from_email,
-#               recipient_list, html_message=message)
-
-# from datetime import timedelta
-# from celery import shared_task
-# from django.utils import timezone
-# from django.contrib.auth import get_user_model
-
-# @shared_task
-# def delete_unconfirmed_user(user_email):
-#     UserModel = get_user_model()
-#     try:
-#         user = UserModel.objects.get(id=user_email, is_active=False)
-#         created_at = user.date_joined
-#         if timezone.now() - created_at > timedelta(seconds=120):
-#             user.delete()
-#     except UserModel.DoesNotExist:
-#         pass
 
 class SignupView(FormView):
     model = get_user_model()
@@ -173,27 +106,29 @@ class SignupView(FormView):
         form = self.get_form()
         if form.is_valid():
             email = request.POST.get('email')
-            username = request.POST.get('username')
             password1 = request.POST.get('password1')
-            password2 = request.POST.get('password2')
-            print(password1, password2)
+
+            firstname = request.POST.get('first_name')
+            lastname = request.POST.get('last_name')
+            phone_number = request.POST.get('phone_number')
+            card_number = request.POST.get('card_number')
             user = User.objects.create_user(
                 email=email,
-                username=username,
+                username=email,
                 password=password1,
             )
             user.is_active = False
             user.save()
-            # request.session['token'] = user.token ///Object of type UUID is not JSON serializable
+            customer = Customer.objects.create(
+                first_name=firstname,
+                last_name=lastname,
+                phone_number=phone_number,
+                card_number=card_number,
+                user=user
+            )
+
             send_email_verification(user)
-            # delete_unconfirmed_user.apply_async(args=[user.email], countdown=120) # thực thi task sau 1 ngày
-            # send_mail(
-            #     'Activate Email Form',
-            #     'Thời gian để kích hoạt là 5phuts',
-            #     'settings.EMAIL_HOST_USER',
-            #     [user.email,'letrongbach02@gmail.com','benphantom102@gmail.com'],
-            #     fail_silently=False
-            # )
+
             print("valid")
             return redirect('success_message')
         else:
@@ -205,7 +140,7 @@ def send_email_verification(user):
     env = Environment(loader=PackageLoader('myapp', 'templates'))
     template = env.get_template('home/email_verification.html')
     verification_url = 'http://localhost:8000/email_verification/' + \
-        str(user.token)
+                       str(user.token)
     # form_action = 'http://localhost:8000/email_verification/', form_action=form_action
     message = template.render(
         user=user, verification_url=verification_url)
@@ -273,10 +208,13 @@ def dashboard(request):
     return render(request, 'dashboard.html')
 
 
-# def logout(request):
-#     response = logout(request)
-#     response.delete_cookie("my_cookie")
-#     return response
+def logout(request):
+    auth_logout(request)  # Đăng xuất user sử dụng hàm logout của Django
+    # Thực hiện các thao tác khác ở đây, ví dụ xoá cookie
+    response = redirect('home')  # Chuyển hướng về trang home
+    response.delete_cookie("my_cookie")  # Xoá cookie "my_cookie"
+    return response
+
 
 def is_admin(user):
     return user.groups.filter(name='Admin').exists()
@@ -309,8 +247,10 @@ def save_vehicle(request):
         current_time = datetime.now()
         date_time = current_time.strftime("%Y,%m,%d")
 
-        a = Customer(first_name=first_name, last_name=last_name, card_number=card_number, car_model=car_model, car_color=car_color,
-                     reg_date=date_time, register_name=register_name, comment=comment, cost_per_day=cost_per_day, device=device)
+        a = Customer(first_name=first_name, last_name=last_name, card_number=card_number, car_model=car_model,
+                     car_color=car_color,
+                     reg_date=date_time, register_name=register_name, comment=comment, cost_per_day=cost_per_day,
+                     device=device)
         a.save()
         messages.success(request, 'Vehicle Registered Successfully')
         return redirect('vehicle')
@@ -424,6 +364,7 @@ class CreateCarView(generics.CreateAPIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # Template call in vehicles
 
 
@@ -525,6 +466,7 @@ def showParkingLot(request):
     context = {'parking_slots': parkingslots}
     return render(request, 'parkingslots/parking_slot.html', context)
 
+
 # def save_parking_record(request):
 #     # if request =="POST":
 
@@ -557,6 +499,7 @@ class CreateParkingRecordView(CreateView):
         available_slots = ParkingSlot.objects.filter(is_available=True)
         context = {'cars': self.cars, 'parking_slots': available_slots}
         return render(request, self.template_name, context)
+
     # def get ----
 
     def post(self, request):
@@ -672,7 +615,7 @@ def exit(request):
 
 class UserCarList(ListView):
     model = Car
-    template_name = 'car_registration/car_registration.html'
+    template_name = 'user_car/user_car_list.html'
     context_object_name = 'cars'
 
     def get_queryset(self):
@@ -685,169 +628,54 @@ class UserCarList(ListView):
             # Khách hàng không tồn tại, trả về queryset rỗng
             return Car.objects.none()
 
-        # class CarReadView(BSModalReadView):
-        #     model = Customer
-        #     template_name = 'view_vehicle2.html'
 
-        # class UserReadView(BSModalReadView):
-        #     model = User
-        #     template_name = 'view_user.html'
+class CreateUserCar(CreateView):
+    model = Car
+    template_name = 'user_car/create_user_car.html'
+    # context_object_name = 'cars'
+    fields = ['license_plate', 'car_model', 'car_color', 'image']
+    success_url = reverse_lazy('success-url')
 
-        # class CarUpdateView(BSModalUpdateView):
-        #     model = Customer
-        #     template_name = 'update_vehicle2.html'
-        #     form_class = CustomerForm
-        #     success_url = reverse_lazy('listvehicle')
+    def form_valid(self, form):
+        form.instance.owner = self.request.user.customer
+        return super().form_valid(form)
 
-        # class CarDeleteView(BSModalDeleteView):
-        #     model = Customer
-        #     template_name = 'delete_vehicle2.html'
-        #     form_class = CustomerForm
-        #     success_url = reverse_lazy('listvehicle')
 
-        # def Pay(request, pk):
-        #     Customer.objects.filter(id = pk).update(exit_date = timezone.now())
-        #     Customer.objects.filter(id = pk).update(is_payed = "True")
-        #     reg_date = Customer.objects.values_list('reg_date').filter(id = pk)
-        #     exit_date = Customer.objects.values_list('exit_date').filter(id = pk)
+from django.core.exceptions import ObjectDoesNotExist
 
-        #     a = str(reg_date)
-        #     b = str(exit_date)
 
-        #     x = a[30:59]
-        #     y = b[30:59]
+class ProfileView(ListView):
+    model = User
+    template_name = 'profile.html'
 
-        #     date_time_str = x
-        #     date_time_str2 = y
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            customer = Customer.objects.get(user=self.request.user)
+        except ObjectDoesNotExist:
+            customer = None
+        context['customer'] = customer
+        return context
 
-        #     myTime = datetime.strptime(date_time_str, "%Y, %m, %d, %H, %M, %S, %f")
-        #     myTime2 = datetime.strptime(date_time_str2, "%Y, %m, %d, %H, %M, %S, %f")
 
-        #     myFormat = ("%Y,%m,%d")
-        #     new_reg_date = myTime.strftime(myFormat)
-        #     new_exit_date = myTime2.strftime(myFormat)
+def save_profile(request):
+    if request.method == "POST":
+        try:
+            customer = Customer.objects.get(user=request.user)
+            customer.first_name = request.POST.get('first_name')
+            customer.last_name = request.POST.get('last_name')
+            customer.phone_number = request.POST.get('phone_number')
+            customer.card_number = request.POST.get('card_number')
+            customer.location = request.POST.get('location')
+            new_password = request.POST.get('password')
+            old_password = request.POST.get('password1')
 
-        #     d2 = myTime2.date()
-        #     d1 = myTime.date()
+            if not new_password is None and old_password == customer.user.password:
+                customer.user.password = new_password
+            customer.save()
+            messages.success(request, 'Your profile has been updated successfully.')
 
-        #     delta = d2 -d1
-        #     mo = delta.days
-
-        #     if mo == 0:
-        #         mo =1
-        #     else:
-        #         mo = mo
-
-        #     Customer.objects.filter(id = pk).update(days_spent = mo)
-        #     cost_per_day = Customer.objects.values_list('cost_per_day').filter(id = pk)
-        #     days_spent = Customer.objects.values_list('days_spent').filter(id = pk)
-
-        #     cpd = str(cost_per_day)
-        #     cpd = cpd[12:-7]
-
-        #     if cpd == str(15):
-        #        cost_per_day = 15000
-        #        total_cost = cost_per_day * mo
-        #        Customer.objects.filter(id = pk).update(total_cost = total_cost)
-        #        messages.success(request, 'Payment Was Finished Successfully')
-        #        return redirect('listvehicle')
-        #     else:
-        #         cost_per_day = 10000
-        #         total_cost = cost_per_day * mo
-        #         Customer.objects.filter(id = pk).update(total_cost = total_cost)
-        #         messages.success(request, 'Payment Was Finished Successfully')
-        #         return redirect('listvehicle')
-
-        # def render_to_pdf(template_src, context_dict={}):
-        #     template = get_template(template_src)
-        #     html  = template.render(context_dict)
-        #     result = BytesIO()
-        #     pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
-        #     if not pdf.err:
-        #         return HttpResponse(result.getvalue(), content_type='application/pdf')
-        #     return None
-
-        # class GeneratePdf(ListView):
-        #     def get(self, request, pk, *args, **kwargs):
-        #         #info = Customer.objects.filter(id=pk)
-        #         infos = Customer.objects.filter(id=pk).values('id','first_name','last_name','total_cost','days_spent', 'reg_date', 'exit_date', 'card_number')
-        #         print(infos)
-        #         context = {
-        #         "data": {
-        #             'today': 'Today',
-        #              'amount': 39.99,
-        #             'customer_name': 'Cooper Mann',
-        #             'order_id': 1233434,
-        #             'location': 'MoTech Tower, Ilala',
-        #             'address': 'P.Box 122 Dar Es Salaam',
-        #             'email': 'info@motechapp.com',
-        #         },
-        #         "infos": infos,
-        #         }
-
-        #         pdf = render_to_pdf('invoice.html', context)
-        #         return HttpResponse(pdf, content_type='application/pdf')
-
-        # class GeneratePDF(LoginRequiredMixin,ListView):
-        #     def get(self, request, *args, **kwargs):
-        #         template = get_template('invoice.html')
-        #         context = {
-        #             "invoice_id": 123,
-        #             "customer_name": "John Cooper",
-        #             "amount": 1399.99,
-        #             "today": "Today",
-        #         }
-        #         html = template.render(context)
-        #         pdf = render_to_pdf('invoice.html', context)
-        #         if pdf:
-        #             response = HttpResponse(pdf, content_type='application/pdf')
-        #             filename = "Invoice_%s.pdf" %("12341231")
-        #             content = "inline; filename='%s'" %(filename)
-        #             download = request.GET.get("download")
-        #             if download:
-        #                 content = "attachment; filename='%s'" %(filename)
-        #             response['Content-Disposition'] = content
-        #             return response
-        #         return HttpResponse("Not found")
-
-        # class DeleteUser(BSModalDeleteView):
-        #     model = User
-        #     template_name = 'dashboard/delete_user.html'
-        #     success_message = 'Success: Data was deleted.'
-        #     success_url = reverse_lazy('users')
-
-        # def create(request):
-        #     choice = ['1', '0', 5000, 10000, 15000, 'Register', 'Admin', 'Cashier']
-        #     choice = {'choice': choice}
-        #     if request.method == 'POST':
-        #             first_name=request.POST['first_name']
-        #             last_name=request.POST['last_name']
-        #             username=request.POST['username']
-        #             userType=request.POST['userType']
-        #             email=request.POST['email']
-        #             password=request.POST['password']
-        #             password = make_password(password)
-        #             print("User Type")
-        #             print(userType)
-        #             if userType == "Register":
-        #                 a = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password, is_register=True)
-        #                 a.save()
-        #                 messages.success(request, 'Member was created successfully!')
-        #                 return redirect('users')
-        #             elif userType == "Cashier":
-        #                 a = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password, is_cashier=True)
-        #                 a.save()
-        #                 messages.success(request, 'Member was created successfully!')
-        #                 return redirect('users')
-        #             elif userType == "Admin":
-        #                 a = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password, is_admin=True)
-        #                 a.save()
-        #                 messages.success(request, 'Member was created successfully!')
-        #                 return redirect('users')
-        #             else:
-        #                 messages.success(request, 'Member was not created')
-        #                 return redirect('users')
-        #     else:
-        #         choice = ['1', '0', 5000, 10000, 15000, 'Register', 'Admin', 'Cashier']
-        #         choice = {'choice': choice}
-        #         return render(request, 'add.html', choice)
+        except ObjectDoesNotExist:
+            customer = None
+            messages.error(request, 'No customer infomation')
+        return redirect('profile')

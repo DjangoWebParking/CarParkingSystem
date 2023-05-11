@@ -7,6 +7,7 @@ from django.urls import path, include
 
 from django.contrib.auth.models import BaseUserManager
 
+
 # class MyUserManager(BaseUserManager):
 #     def create_user(self, email, password=None, **extra_fields):
 #         if not email:
@@ -36,7 +37,7 @@ class User(AbstractUser):
             self.is_admin = True
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs) # quá chi là áp lực
+        super().save(*args, **kwargs)  # quá chi là áp lực
         # Nếu user được đánh dấu là customer hoặc admin, thêm vào các group tương ứng
         if self.is_customer:
             group, created = Group.objects.get_or_create(name='Customer')
@@ -56,12 +57,14 @@ class User(AbstractUser):
 class Customer(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, unique=True, null=True, blank=True)
+    avatar = models.ImageField(upload_to='avatar_images/', default='avatar_images/image.jpg')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=100)
     comment = models.TextField(max_length=5000, blank=True)
     register_name = models.CharField(max_length=100)
     card_number = models.CharField(max_length=100)
+    location = models.CharField(max_length=100)
     reg_date = models.DateTimeField(auto_now_add=True)
 
 
@@ -69,7 +72,9 @@ class Car(models.Model):
     license_plate = models.CharField(max_length=20, unique=True)
     car_model = models.CharField(max_length=100)
     car_color = models.CharField(max_length=100)
-    owner = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='cars',to_field='id')
+    owner = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='cars', to_field='id')
+    reg_date = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='car_images/')
 
     def __str__(self):
         return self.license_plate
@@ -92,8 +97,6 @@ class ParkingSlot(models.Model):
     parking_type = models.CharField(max_length=1, choices=PARKING_TYPES)
     is_available = models.BooleanField(default=True)
     cost_per_day = models.IntegerField(null=True, blank=True)
-    reg_date = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(upload_to='car_images/')
 
     def __str__(self):
         return f"{self.get_parking_type_display()} slot {self.slot_number}"

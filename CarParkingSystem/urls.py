@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path, include
 from myapp import views
 from django.contrib.auth import views as auth_views  # khong su dung
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,7 +32,7 @@ urlpatterns = [
     path('email_verification/', views.email_verification,
          name='success_message'),
     #    path('signup/', views.signup, name='signup'),
-     #    path('signup/', views.signup_view1, name='signup'),
+    #    path('signup/', views.signup_view1, name='signup'),
     #     path('signup/', views.signup, name='signup'),
     # path('pay/<int:pk>', views.Pay, name='pay'),
     path('add_vehicle/', views.add_vehicle, name='add_vehicle'),
@@ -88,10 +90,17 @@ urlpatterns = [
          views.get_parking_record, name='get_parking_record'),
     path('show_home/', views.show_home, name='show_home'),
     path('exit/', views.exit, name='exit'),
-    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    # path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('email_verification/<str:token>',
          views.email_verification, name='email_verification'),
     path('success_message/', views.show_success_signup, name='success_message'),
-    path('user_car_list', views.UserCarList.as_view(),name='user_car_list')
+    # User Car
+    path('user_car_list', views.UserCarList.as_view(), name='user_car_list'),
+    path('create_user_car', views.UserCarList.as_view(), name='create_user_car'),
+    path('update_user_car/<int:pk>/', views.UserCarList.as_view(), name='update_user_car'),
+    path('delete_user_car/<int:pk>/', views.UserCarList.as_view(), name='delete_user_car'),
+    path('user_car_detail/<int:pk>/', views.UserCarList.as_view(), name='delete_user_car'),
+    path('profile/', views.ProfileView.as_view(), name='profile'),
+    path('save_profile/', views.save_profile    , name='save_profile'),
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
