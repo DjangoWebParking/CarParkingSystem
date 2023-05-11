@@ -91,6 +91,7 @@ urlpatterns = [
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('email_verification/<str:token>',
          views.email_verification, name='email_verification'),
-    path('success_message/', views.show_success_signup, name='success_message')
-    # path('reserve_slot/<int:pk>',views.)email_verification
+    path('success_message/', views.show_success_signup, name='success_message'),
+    path('user_car_list', views.UserCarList.as_view(),name='user_car_list')
+
 ]

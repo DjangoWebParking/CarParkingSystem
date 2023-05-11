@@ -118,15 +118,15 @@
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'customer_list' %}">
+        <a class="nav-link" href="{% url 'profile' %}">
             <i class="fas fa-car-alt text-primary"></i>
             <span style="color: white">My Account</span>
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'car_list' %}">
+        <a class="nav-link" href="{% url 'user_car_list' %}">
             <i class="fas fa-car-alt text-primary"></i>
-            <span style="color: white">Car Registrations</span>
+            <span style="color: white">My Cars</span>
         </a>
     </li>
   
@@ -135,19 +135,7 @@
             <i class="fas fa-car-alt text-primary"></i>
             <span style="color: white">Paid Car Invoices</span>
         </a>
-    </li> 
-  
-  {% if user.is_superuser or user.is_admin %}
-                   <li class="nav-item">
-        <a class="nav-link" href="">
-            <i class="fas fa-user text-primary"></i>
-            <span style="color: white">Manage User</span>
-        </a>
-    </li>
-            {% else %}     
-    
-            {% endif %}
-   
+    </li>  
 </ul>    
 
     {% block body %}{% endblock %}

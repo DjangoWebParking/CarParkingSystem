@@ -1,3 +1,5 @@
+from jinja2 import Environment, PackageLoader
+from django.middleware.csrf import get_token
 from django.utils.html import strip_tags
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -197,11 +199,9 @@ class SignupView(FormView):
         else:
             print("invalid")
             return redirect('signup')
-        
-from jinja2 import Environment, PackageLoader
-from django.middleware.csrf import get_token
 
-def send_email_verification(user):  
+
+def send_email_verification(user):
     env = Environment(loader=PackageLoader('myapp', 'templates'))
     template = env.get_template('home/email_verification.html')
     verification_url = 'http://localhost:8000/email_verification/' + \
@@ -223,7 +223,7 @@ def send_email_verification(user):
                       user.email, msg.as_string())
 
 
-def email_verification(request,token):
+def email_verification(request, token):
     # csrf_token = get_token(request) ,'csrf_token':csrf_token
     form = EmailVerificationForm({'token': token})
     if form.is_valid():
@@ -669,169 +669,185 @@ def exit(request):
         messages.success(request, 'Cập nhật trạng thái chỗ đậu xe thành công.')
     return redirect(reverse('show_parking_lot'))
 
-    # class CarReadView(BSModalReadView):
-    #     model = Customer
-    #     template_name = 'view_vehicle2.html'
 
-    # class UserReadView(BSModalReadView):
-    #     model = User
-    #     template_name = 'view_user.html'
+class UserCarList(ListView):
+    model = Car
+    template_name = 'car_registration/car_registration.html'
+    context_object_name = 'cars'
 
-    # class CarUpdateView(BSModalUpdateView):
-    #     model = Customer
-    #     template_name = 'update_vehicle2.html'
-    #     form_class = CustomerForm
-    #     success_url = reverse_lazy('listvehicle')
+    def get_queryset(self):
+        # lấy danh sách các Car thuộc khách hàng đang đăng nhập
+        try:
+            customer = Customer.objects.get(user=self.request.user)
+            cars = Car.objects.filter(owner=customer)
+            return cars
+        except Customer.DoesNotExist:
+            # Khách hàng không tồn tại, trả về queryset rỗng
+            return Car.objects.none()
 
-    # class CarDeleteView(BSModalDeleteView):
-    #     model = Customer
-    #     template_name = 'delete_vehicle2.html'
-    #     form_class = CustomerForm
-    #     success_url = reverse_lazy('listvehicle')
+        # class CarReadView(BSModalReadView):
+        #     model = Customer
+        #     template_name = 'view_vehicle2.html'
 
-    # def Pay(request, pk):
-    #     Customer.objects.filter(id = pk).update(exit_date = timezone.now())
-    #     Customer.objects.filter(id = pk).update(is_payed = "True")
-    #     reg_date = Customer.objects.values_list('reg_date').filter(id = pk)
-    #     exit_date = Customer.objects.values_list('exit_date').filter(id = pk)
+        # class UserReadView(BSModalReadView):
+        #     model = User
+        #     template_name = 'view_user.html'
 
-    #     a = str(reg_date)
-    #     b = str(exit_date)
+        # class CarUpdateView(BSModalUpdateView):
+        #     model = Customer
+        #     template_name = 'update_vehicle2.html'
+        #     form_class = CustomerForm
+        #     success_url = reverse_lazy('listvehicle')
 
-    #     x = a[30:59]
-    #     y = b[30:59]
+        # class CarDeleteView(BSModalDeleteView):
+        #     model = Customer
+        #     template_name = 'delete_vehicle2.html'
+        #     form_class = CustomerForm
+        #     success_url = reverse_lazy('listvehicle')
 
-    #     date_time_str = x
-    #     date_time_str2 = y
+        # def Pay(request, pk):
+        #     Customer.objects.filter(id = pk).update(exit_date = timezone.now())
+        #     Customer.objects.filter(id = pk).update(is_payed = "True")
+        #     reg_date = Customer.objects.values_list('reg_date').filter(id = pk)
+        #     exit_date = Customer.objects.values_list('exit_date').filter(id = pk)
 
-    #     myTime = datetime.strptime(date_time_str, "%Y, %m, %d, %H, %M, %S, %f")
-    #     myTime2 = datetime.strptime(date_time_str2, "%Y, %m, %d, %H, %M, %S, %f")
+        #     a = str(reg_date)
+        #     b = str(exit_date)
 
-    #     myFormat = ("%Y,%m,%d")
-    #     new_reg_date = myTime.strftime(myFormat)
-    #     new_exit_date = myTime2.strftime(myFormat)
+        #     x = a[30:59]
+        #     y = b[30:59]
 
-    #     d2 = myTime2.date()
-    #     d1 = myTime.date()
+        #     date_time_str = x
+        #     date_time_str2 = y
 
-    #     delta = d2 -d1
-    #     mo = delta.days
+        #     myTime = datetime.strptime(date_time_str, "%Y, %m, %d, %H, %M, %S, %f")
+        #     myTime2 = datetime.strptime(date_time_str2, "%Y, %m, %d, %H, %M, %S, %f")
 
-    #     if mo == 0:
-    #         mo =1
-    #     else:
-    #         mo = mo
+        #     myFormat = ("%Y,%m,%d")
+        #     new_reg_date = myTime.strftime(myFormat)
+        #     new_exit_date = myTime2.strftime(myFormat)
 
-    #     Customer.objects.filter(id = pk).update(days_spent = mo)
-    #     cost_per_day = Customer.objects.values_list('cost_per_day').filter(id = pk)
-    #     days_spent = Customer.objects.values_list('days_spent').filter(id = pk)
+        #     d2 = myTime2.date()
+        #     d1 = myTime.date()
 
-    #     cpd = str(cost_per_day)
-    #     cpd = cpd[12:-7]
+        #     delta = d2 -d1
+        #     mo = delta.days
 
-    #     if cpd == str(15):
-    #        cost_per_day = 15000
-    #        total_cost = cost_per_day * mo
-    #        Customer.objects.filter(id = pk).update(total_cost = total_cost)
-    #        messages.success(request, 'Payment Was Finished Successfully')
-    #        return redirect('listvehicle')
-    #     else:
-    #         cost_per_day = 10000
-    #         total_cost = cost_per_day * mo
-    #         Customer.objects.filter(id = pk).update(total_cost = total_cost)
-    #         messages.success(request, 'Payment Was Finished Successfully')
-    #         return redirect('listvehicle')
+        #     if mo == 0:
+        #         mo =1
+        #     else:
+        #         mo = mo
 
-    # def render_to_pdf(template_src, context_dict={}):
-    #     template = get_template(template_src)
-    #     html  = template.render(context_dict)
-    #     result = BytesIO()
-    #     pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
-    #     if not pdf.err:
-    #         return HttpResponse(result.getvalue(), content_type='application/pdf')
-    #     return None
+        #     Customer.objects.filter(id = pk).update(days_spent = mo)
+        #     cost_per_day = Customer.objects.values_list('cost_per_day').filter(id = pk)
+        #     days_spent = Customer.objects.values_list('days_spent').filter(id = pk)
 
-    # class GeneratePdf(ListView):
-    #     def get(self, request, pk, *args, **kwargs):
-    #         #info = Customer.objects.filter(id=pk)
-    #         infos = Customer.objects.filter(id=pk).values('id','first_name','last_name','total_cost','days_spent', 'reg_date', 'exit_date', 'card_number')
-    #         print(infos)
-    #         context = {
-    #         "data": {
-    #             'today': 'Today',
-    #              'amount': 39.99,
-    #             'customer_name': 'Cooper Mann',
-    #             'order_id': 1233434,
-    #             'location': 'MoTech Tower, Ilala',
-    #             'address': 'P.Box 122 Dar Es Salaam',
-    #             'email': 'info@motechapp.com',
-    #         },
-    #         "infos": infos,
-    #         }
+        #     cpd = str(cost_per_day)
+        #     cpd = cpd[12:-7]
 
-    #         pdf = render_to_pdf('invoice.html', context)
-    #         return HttpResponse(pdf, content_type='application/pdf')
+        #     if cpd == str(15):
+        #        cost_per_day = 15000
+        #        total_cost = cost_per_day * mo
+        #        Customer.objects.filter(id = pk).update(total_cost = total_cost)
+        #        messages.success(request, 'Payment Was Finished Successfully')
+        #        return redirect('listvehicle')
+        #     else:
+        #         cost_per_day = 10000
+        #         total_cost = cost_per_day * mo
+        #         Customer.objects.filter(id = pk).update(total_cost = total_cost)
+        #         messages.success(request, 'Payment Was Finished Successfully')
+        #         return redirect('listvehicle')
 
-    # class GeneratePDF(LoginRequiredMixin,ListView):
-    #     def get(self, request, *args, **kwargs):
-    #         template = get_template('invoice.html')
-    #         context = {
-    #             "invoice_id": 123,
-    #             "customer_name": "John Cooper",
-    #             "amount": 1399.99,
-    #             "today": "Today",
-    #         }
-    #         html = template.render(context)
-    #         pdf = render_to_pdf('invoice.html', context)
-    #         if pdf:
-    #             response = HttpResponse(pdf, content_type='application/pdf')
-    #             filename = "Invoice_%s.pdf" %("12341231")
-    #             content = "inline; filename='%s'" %(filename)
-    #             download = request.GET.get("download")
-    #             if download:
-    #                 content = "attachment; filename='%s'" %(filename)
-    #             response['Content-Disposition'] = content
-    #             return response
-    #         return HttpResponse("Not found")
+        # def render_to_pdf(template_src, context_dict={}):
+        #     template = get_template(template_src)
+        #     html  = template.render(context_dict)
+        #     result = BytesIO()
+        #     pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+        #     if not pdf.err:
+        #         return HttpResponse(result.getvalue(), content_type='application/pdf')
+        #     return None
 
-    # class DeleteUser(BSModalDeleteView):
-    #     model = User
-    #     template_name = 'dashboard/delete_user.html'
-    #     success_message = 'Success: Data was deleted.'
-    #     success_url = reverse_lazy('users')
+        # class GeneratePdf(ListView):
+        #     def get(self, request, pk, *args, **kwargs):
+        #         #info = Customer.objects.filter(id=pk)
+        #         infos = Customer.objects.filter(id=pk).values('id','first_name','last_name','total_cost','days_spent', 'reg_date', 'exit_date', 'card_number')
+        #         print(infos)
+        #         context = {
+        #         "data": {
+        #             'today': 'Today',
+        #              'amount': 39.99,
+        #             'customer_name': 'Cooper Mann',
+        #             'order_id': 1233434,
+        #             'location': 'MoTech Tower, Ilala',
+        #             'address': 'P.Box 122 Dar Es Salaam',
+        #             'email': 'info@motechapp.com',
+        #         },
+        #         "infos": infos,
+        #         }
 
-    # def create(request):
-    #     choice = ['1', '0', 5000, 10000, 15000, 'Register', 'Admin', 'Cashier']
-    #     choice = {'choice': choice}
-    #     if request.method == 'POST':
-    #             first_name=request.POST['first_name']
-    #             last_name=request.POST['last_name']
-    #             username=request.POST['username']
-    #             userType=request.POST['userType']
-    #             email=request.POST['email']
-    #             password=request.POST['password']
-    #             password = make_password(password)
-    #             print("User Type")
-    #             print(userType)
-    #             if userType == "Register":
-    #                 a = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password, is_register=True)
-    #                 a.save()
-    #                 messages.success(request, 'Member was created successfully!')
-    #                 return redirect('users')
-    #             elif userType == "Cashier":
-    #                 a = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password, is_cashier=True)
-    #                 a.save()
-    #                 messages.success(request, 'Member was created successfully!')
-    #                 return redirect('users')
-    #             elif userType == "Admin":
-    #                 a = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password, is_admin=True)
-    #                 a.save()
-    #                 messages.success(request, 'Member was created successfully!')
-    #                 return redirect('users')
-    #             else:
-    #                 messages.success(request, 'Member was not created')
-    #                 return redirect('users')
-    #     else:
-    #         choice = ['1', '0', 5000, 10000, 15000, 'Register', 'Admin', 'Cashier']
-    #         choice = {'choice': choice}
-    #         return render(request, 'add.html', choice)
+        #         pdf = render_to_pdf('invoice.html', context)
+        #         return HttpResponse(pdf, content_type='application/pdf')
+
+        # class GeneratePDF(LoginRequiredMixin,ListView):
+        #     def get(self, request, *args, **kwargs):
+        #         template = get_template('invoice.html')
+        #         context = {
+        #             "invoice_id": 123,
+        #             "customer_name": "John Cooper",
+        #             "amount": 1399.99,
+        #             "today": "Today",
+        #         }
+        #         html = template.render(context)
+        #         pdf = render_to_pdf('invoice.html', context)
+        #         if pdf:
+        #             response = HttpResponse(pdf, content_type='application/pdf')
+        #             filename = "Invoice_%s.pdf" %("12341231")
+        #             content = "inline; filename='%s'" %(filename)
+        #             download = request.GET.get("download")
+        #             if download:
+        #                 content = "attachment; filename='%s'" %(filename)
+        #             response['Content-Disposition'] = content
+        #             return response
+        #         return HttpResponse("Not found")
+
+        # class DeleteUser(BSModalDeleteView):
+        #     model = User
+        #     template_name = 'dashboard/delete_user.html'
+        #     success_message = 'Success: Data was deleted.'
+        #     success_url = reverse_lazy('users')
+
+        # def create(request):
+        #     choice = ['1', '0', 5000, 10000, 15000, 'Register', 'Admin', 'Cashier']
+        #     choice = {'choice': choice}
+        #     if request.method == 'POST':
+        #             first_name=request.POST['first_name']
+        #             last_name=request.POST['last_name']
+        #             username=request.POST['username']
+        #             userType=request.POST['userType']
+        #             email=request.POST['email']
+        #             password=request.POST['password']
+        #             password = make_password(password)
+        #             print("User Type")
+        #             print(userType)
+        #             if userType == "Register":
+        #                 a = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password, is_register=True)
+        #                 a.save()
+        #                 messages.success(request, 'Member was created successfully!')
+        #                 return redirect('users')
+        #             elif userType == "Cashier":
+        #                 a = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password, is_cashier=True)
+        #                 a.save()
+        #                 messages.success(request, 'Member was created successfully!')
+        #                 return redirect('users')
+        #             elif userType == "Admin":
+        #                 a = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password, is_admin=True)
+        #                 a.save()
+        #                 messages.success(request, 'Member was created successfully!')
+        #                 return redirect('users')
+        #             else:
+        #                 messages.success(request, 'Member was not created')
+        #                 return redirect('users')
+        #     else:
+        #         choice = ['1', '0', 5000, 10000, 15000, 'Register', 'Admin', 'Cashier']
+        #         choice = {'choice': choice}
+        #         return render(request, 'add.html', choice)

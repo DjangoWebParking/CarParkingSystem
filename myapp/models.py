@@ -92,6 +92,8 @@ class ParkingSlot(models.Model):
     parking_type = models.CharField(max_length=1, choices=PARKING_TYPES)
     is_available = models.BooleanField(default=True)
     cost_per_day = models.IntegerField(null=True, blank=True)
+    reg_date = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='car_images/')
 
     def __str__(self):
         return f"{self.get_parking_type_display()} slot {self.slot_number}"
