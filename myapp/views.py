@@ -86,6 +86,7 @@ from decimal import Decimal
 from django.forms.models import model_to_dict
 
 from django.conf.urls import handler404
+from google.cloud import storage
 
 # Create your views here.
 
@@ -97,6 +98,8 @@ from bootstrap_modal_forms.generic import (
     BSModalReadView,
     BSModalDeleteView
 )
+from google.cloud import storage
+client = storage.Client.from_service_account_json('firebase/serviceAccount.json')
 
 import pyrebase
 
@@ -114,6 +117,8 @@ config = {
 firebase = pyrebase.initialize_app(config)
 authe = firebase.auth()
 storage = firebase.storage()
+
+
 
 
 class SignupView(FormView):
@@ -780,6 +785,7 @@ class UserCarList(ListView):
 
 
 from .forms import CreateUserCarForm
+from uuid import uuid4
 
 
 class CreateUserCarView(CreateView):
@@ -788,23 +794,56 @@ class CreateUserCarView(CreateView):
     template_name = 'user_car/create_user_car.html'
     success_url = reverse_lazy('user_car_list')  # Lỗi is_ajax nếu sai template
 
-    # def post(self,request):
-
     def form_valid(self, form):
-        # Không gọi form.save() mà tạo instance mới để lưu vào database
-        car = Car(
-            license_plate=form.cleaned_data['license_plate'],
-            car_model=form.cleaned_data['car_model'],
-            car_color=form.cleaned_data['car_color'],
-            owner=Customer.objects.get(user=self.request.user),
-            image=form.cleaned_data['image']
-        )
-        car.save()
+        # Lấy dữ liệu từ form
+        license_plate = form.cleaned_data['license_plate']
+        car_model = form.cleaned_data['car_model']
+        car_color = form.cleaned_data['car_color']
+        image = form.cleaned_data['image']
 
-        if self.request and self.request.is_ajax():
-            # Nếu là Ajax request, trả về một JsonResponse
-            return JsonResponse({'success': True})
+        # Lưu ảnh lên Firebase Storage
+        if image:
+            # Tạo tên file mới ngẫu nhiên
+            filename = f"{license_plate}-{uuid4().hex}.jpg"
+
+            # Lưu file vào bucket trên Firebase Storage
+            bucket_name = "carparkingsystem-8d374.appspot.com"  # not include gs://
+            bucket = client.bucket(bucket_name)
+            folder_path = "car_images/"
+            blob = bucket.blob(folder_path + filename)
+            blob.upload_from_file(image)
+
+            # Lấy URL của ảnh từ Firebase Storage
+            image_url = blob.public_url
+            print(image_url)
+            # Tạo instance mới để lưu vào database
+            car = Car.objects.create(
+                license_plate=license_plate,
+                car_model=car_model,
+                car_color=car_color,
+                owner=Customer.objects.get(user=self.request.user),
+                image=image,
+                image_url=image_url
+            )
+            car.save()
+            print("Here")
+
         return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+        # Gọi hàm form_valid khi form được validate thành công
+        self.object = None
+        form = self.get_form()
+        if form.is_valid():
+            self.form_valid(form)
+            return redirect('user_car_list')
+
+        else:
+            return self.form_invalid(form)
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        messages.error(self.request, 'Lỗi: Vui lòng kiểm tra lại thông tin')
+        return response
 
 
 from .forms import UserCarCModelForm
@@ -1026,7 +1065,10 @@ def customer_invoices(request):
     customer_invoices = Invoice.objects.filter(customer=customer)
     return render(request, 'invoice/customer_invoice_list.html', {'customer_invoices': customer_invoices})
 
+
 from .forms import UpdateInvoiceForm
+
+
 class InvoiceUpdateView(BSModalUpdateView):
     model = Invoice
     template_name = 'invoice/update_invoice.html'
@@ -1035,12 +1077,12 @@ class InvoiceUpdateView(BSModalUpdateView):
     success_url = reverse_lazy('invoice_list')
 
 
-
 class InvoiceDeleteView(BSModalDeleteView):
     model = Invoice
     template_name = 'invoice/delete_invoice.html'
     success_message = 'Success: Invoice was deleted.'
     success_url = reverse_lazy('invoice_list')
+
 
 from django.template.loader import render_to_string
 from weasyprint import HTML

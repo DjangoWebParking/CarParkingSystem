@@ -212,7 +212,7 @@ class UserCarCModelForm(BSModalModelForm):
         exclude = ['timestamp', 'is_active', 'is_parking']
 
 
-class UpdateInvoiceForm(BSModalModelForm):
+class UpdateInvoiceForm(forms.Form):
     class Meta:
         model = Invoice
         PAYMENT_METHOD_CHOICES = (
