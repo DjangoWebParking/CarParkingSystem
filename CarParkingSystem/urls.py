@@ -29,9 +29,6 @@ from django.conf.urls import handler404, handler500
 def is_admin(user):
     return user.is_authenticated and user.is_admin
 
-
-
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('admin_dashboard/', views.admin_view, name='admin_dashboard'),
@@ -106,7 +103,7 @@ urlpatterns = [
          views.ParkingRecordDetailView.as_view(), name='parking_record_detail'),
     path('parking-record/<int:pk>/',
          views.get_parking_record, name='get_parking_record'),
-    path('user/show_parking_overview/', views.show_parking_overview, name='show_parking_overview'),
+    path('show_parking_overview/', views.show_parking_overview, name='show_parking_overview'),
     path('exit/', user_passes_test(is_admin)(views.exit), name='exit'),
     # path('exit_by_user/', views.exitUserSide, name='exit_user'),
     # path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
@@ -145,6 +142,9 @@ urlpatterns = [
     path('customer_invoices/', views.customer_invoices, name='customer_invoice_list'),
     # đường dẫn để in hóa đơn
     path('invoice-print/<int:invoice_id>/', views.invoice_print, name='invoice_print'),
+    path('get_customer_info/',views.get_customer_info,name='get_customer_info'),
+    path('direct_payment_view/',views.direct_payment_view,name='direct_payment_view'),
+    path('online_payment_view/',views.online_payment_view,name='online_payment_view'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'myapp.views.custom_page_not_found'

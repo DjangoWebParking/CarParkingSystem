@@ -674,7 +674,7 @@ def display_invoice(request, parking_record_id):
         return render(request, 'invoice.html', {'invoice': invoice})
     except ParkingRecord.DoesNotExist:
         messages.error(request, 'No parking record found for this parking slot.')
-        return redirect(reverse('show_parking_lot'))
+        return redirect(reverse('show_parking_overview'))
 
 
 def exit(request):
@@ -731,7 +731,7 @@ def exit(request):
         except ParkingRecord.DoesNotExist:
             # Handle the case where there is no matching ParkingRecord object
             messages.error(request, 'No parking record found for this parking slot.')
-            return redirect(reverse('show_parking_lot'))
+            return redirect(reverse('show_parking_overview'))
 
 
 # def exitUserSide(request):
@@ -930,7 +930,6 @@ def save_profile(request):
             customer.location = request.POST.get('location')
             new_password = request.POST.get('new_password')
             old_password = request.POST.get('password')
-
 
             if not new_password is None and old_password == customer.user.password:
                 customer.user.password = new_password
@@ -1137,3 +1136,138 @@ def invoice_print(request, invoice_id):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'filename="invoice.pdf"'
     return response
+
+
+def get_customer_info(request, pk):
+    if request.method == "POST":
+        parkingSlot = ParkingSlot.objects.get(id=pk)
+        parkingRecord = ParkingRecord.objects.get(parkingSlot=parkingSlot, exit_time=None)
+        customer = parkingRecord.car.owner
+        # Chuẩn bị dữ liệu thông tin khách hàng
+        customer_info = {
+            'name': customer.name,
+            'email': customer.email,
+            'phone': customer.phone
+        }
+
+        # Trả về thông tin khách hàng dưới dạng JSON
+        return JsonResponse({'customer': customer_info})
+
+
+def direct_payment_view(request):
+    if request.method == "POST":
+        try:
+            parking_slot_pk = request.POST.get('parking_slot_id')
+            # Do something with the parking_slot_pk, for example:
+            parking_slot = ParkingSlot.objects.get(pk=parking_slot_pk)
+
+            # Get parking _record
+            parking_record = ParkingRecord.objects.get(parking_slot=parking_slot, exit_time=None)
+            parking_record.exit_time = timezone.now()
+            timedelta = parking_record.exit_time - parking_record.entry_time
+            total_seconds = timedelta.total_seconds()
+            rounded_hours = Decimal(total_seconds / 3600)
+
+            parking_record.total_cost = rounded_hours * parking_slot.cost_per_hour
+            parking_record.save()
+
+            parking_slot.is_available = True
+            # parking_slot.exit_time = timezone.now()
+            parking_slot.save()
+
+            car = Car.objects.get(id=parking_record.car.id)
+            print(car.id)
+            car.is_parking = False
+            car.save()
+            customer = Customer.objects.filter(cars__id=car.id).first()
+            invoice = Invoice.objects.create(
+                parking_record=parking_record,
+                customer=customer,
+                invoice_number="INV-" + str(parking_record.id),
+                invoice_date=timezone.now().date(),
+                due_date=timezone.now().date() + timezone.timedelta(days=7),  # Set payment deadline to 7 days from now
+                parking_start_time=parking_record.entry_time,
+                parking_end_time=parking_record.exit_time,
+                parking_duration=rounded_hours,
+                parking_fee=parking_record.total_cost,
+                extra_fee=0,
+                total_fee=parking_record.total_cost + 0,
+                payment_status="paid",
+                payment_method='direct'
+            )
+            invoice.save()
+            messages.success(request, 'Cập nhật trạng thái chỗ đậu xe thành công.')
+            # Render invoice modal
+            invoice_dict = model_to_dict(invoice)
+            context = {
+                'invoice': invoice_dict,
+                'parking_record': parking_record,
+            }
+            return render(request, 'invoice/invoice_modal.html', context)
+            # return redirect('display_invoice', parking_record_id=parking_record.id)
+
+        except ParkingRecord.DoesNotExist:
+            # Handle the case where there is no matching ParkingRecord object
+            messages.error(request, 'No parking record found for this parking slot.')
+            return redirect(reverse('show_parking_overview'))
+
+
+def online_payment_view(request):
+    if request.method == "POST":
+        try:
+            parking_slot_pk = request.POST.get('parking_slot_id')
+            # Do something with the parking_slot_pk, for example:
+            parking_slot = ParkingSlot.objects.get(pk=parking_slot_pk)
+
+            # Get parking _record
+            parking_record = ParkingRecord.objects.get(parking_slot=parking_slot, exit_time=None)
+            parking_record.exit_time = timezone.now()
+            timedelta = parking_record.exit_time - parking_record.entry_time
+            total_seconds = timedelta.total_seconds()
+            rounded_hours = Decimal(total_seconds / 3600)
+
+            parking_record.total_cost = rounded_hours * parking_slot.cost_per_hour
+            parking_record.save()
+
+            parking_slot.is_available = True
+            # parking_slot.exit_time = timezone.now()
+            parking_slot.save()
+
+            car = Car.objects.get(id=parking_record.car.id)
+            print(car.id)
+            car.is_parking = False
+            car.save()
+            customer = Customer.objects.filter(cars__id=car.id).first()
+            print("customer", customer)
+            invoice = Invoice.objects.create(
+                parking_record=parking_record,
+                customer=customer,
+                invoice_number="INV-" + str(parking_record.id),
+                invoice_date=timezone.now().date(),
+                due_date=timezone.now().date() + timezone.timedelta(days=7),  # Set payment deadline to 7 days from now
+                parking_start_time=parking_record.entry_time,
+                parking_end_time=parking_record.exit_time,
+                parking_duration=rounded_hours,
+                parking_fee=parking_record.total_cost,
+                extra_fee=0,
+                total_fee=parking_record.total_cost + 0,
+                payment_status="unpaid",
+                payment_date=timezone.now().date(),
+                payment_method='online'
+            )
+            invoice.save()
+            messages.success(request, 'Cập nhật trạng thái chỗ đậu xe thành công.')
+            # Render invoice modal
+            invoice_dict = model_to_dict(invoice)
+            context = {
+                'invoice': invoice_dict,
+                'parking_record': parking_record,
+                'customer': customer
+            }
+            return render(request, 'invoice/invoice_modal.html', context)
+            # return redirect('display_invoice', parking_record_id=parking_record.id)
+
+        except ParkingRecord.DoesNotExist:
+            # Handle the case where there is no matching ParkingRecord object
+            messages.error(request, 'No parking record found for this parking slot.')
+            return redirect(reverse('show_parking_overview'))

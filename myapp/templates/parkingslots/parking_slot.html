@@ -12,8 +12,8 @@
           <div class="card-header">SLOT NUMBER {{ parking_slot.slot_number }}</div>
           <div class="card-body">
             {% if not parking_slot.is_available %}
-            <p>Parking type: {{ parking_slot.get_parking_type_display }}</p>
-            <p>Cost per day: {{ parking_slot.cost_per_day }}</p>
+            <p>Loại bãi: {{ parking_slot.get_parking_type_display }}</p>
+            <p>Giá theo giờ: {{ parking_slot.cost_per_hour }}</p>
             <!-- <p><strong>Car  {{ parking_slot.cost_per_day }}</strong></p> -->
             <p>Time parked: {{ parking_slot.entry_time }}</p>
             <p><strong>Available</strong></p>
