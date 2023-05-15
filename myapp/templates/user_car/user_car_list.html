@@ -1,4 +1,5 @@
-{% extends 'base_user.html' %}
+{% extends 'base.html' %}
+
 {% block body %}
 <div id="content-wrapper">
     <div class="container-fluid">
@@ -124,12 +125,50 @@
         </div>
     </div>
 </div>
+
+{% if error_message %}
+<div class="alert alert-danger" role="alert">
+    {{ error_message }}
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extrascripts %}
 <script type="text/javascript">
+$(function () {
+    var asyncSuccessMessageUpdate = [
+        "<div ",
+        "style='position:fixed;top:0;z-index:10000;width:100%;border-radius:0;' ",
+        "class='alert alert-icon alert-success alert-dismissible fade show mb-0' role='alert'>",
+        "Success: Data was updated.",
+        "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>",
+        "<span aria-hidden='true'>&times;</span>",
+        "</button>",
+        "</div>",
+        "<script>",
+        "$('.alert').fadeTo(2000, 500).slideUp(500, function () {$('.alert').slideUp(500).remove();});",
+        "<\/script>"
+    ].join("");
 
 
+    function updateCarModalForm() {
+        $(".update-user").each(function () {
+            $(this).modalForm({
+                formURL: $(this).data("form-url"),
+                asyncUpdate: true,
+                asyncSettings: {
+                    closeOnSubmit: false,
+                    successMessage: asyncSuccessMessageUpdate,
+                    dataUrl: "books/",
+                    dataElementId: "#books-table",
+                    dataKey: "table",
+                    addModalFormFunction: updateBookModalForm
+                }
+            });
+        });
+    }
+    updateCarModalForm();
+});
     $(document).ready(function() {
     $(".read-user-car").each(function () {
         $(this).modalForm({formURL: $(this).data("form-url")});

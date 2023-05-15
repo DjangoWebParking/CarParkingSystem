@@ -31,6 +31,7 @@
         }
 
 
+
     </style>
     {% endblock stylesheets %}
 
@@ -46,6 +47,7 @@
 
     <!-- Custom styles for this template-->
     <link href="{% static 'css/new/sb-admin.css' %}" rel="stylesheet">
+    <link href="{% static 'parking_overview/style.css' %}" rel="stylesheet">
     {% block stylesheet %}{% endblock %}
 </head>
 
@@ -94,13 +96,14 @@
 
     <!-- Sidebar -->
     <ul class="sidebar navbar-nav">
-
+        {% if user.is_superuser or user.is_admin %}
         <li class="nav-item active">
             <a class="nav-link" href="{% url 'dashboard' %}">
                 <i class="fa fa-home" aria-hidden="true"></i>
                 <span>System Dashboard</span>
             </a>
         </li>
+        {% endif %}
         <li class="nav-item active">
             <a class="nav-link" href="{% url 'profile' %}">
                 <i class="fas fa-user-circle fa-fw text-primary"></i>
@@ -115,6 +118,7 @@
             </span>
             </a>
         </li>
+        {% if user.is_superuser or user.is_admin %}
         <li class="nav-item">
             <a class="nav-link" href="{% url 'customer_list' %}">
                 <i class="fa fa-id-card text-primary"></i>
@@ -159,6 +163,40 @@
                 <span style="color: white">Manage User</span>
             </a>
         </li>
+        {% elif user.is_customer %}
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'show_parking_overview' %}">
+                <i class="fas fa-car-alt text-primary"></i>
+                <span style="color: white">Parking Lot Overview</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'profile' %}">
+                <i class="fas fa-car-alt text-primary"></i>
+                <span style="color: white">My Account</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'user_car_list' %}">
+                <i class="fas fa-car-alt text-primary"></i>
+                <span style="color: white">My Cars</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'parking_history' %}">
+                <i class="fas fa-car-alt text-primary"></i>
+                <span style="color: white">My Parking History</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'customer_invoice_list' %}">
+                <i class="fas fa-car-alt text-primary"></i>
+                <span style="color: white">My Paid Car Invoices</span>
+            </a>
+        </li>
+        {% endif %}
 
     </ul>
 

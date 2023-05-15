@@ -205,11 +205,22 @@ class CreateUserCarForm(BSModalModelForm):
             'image': forms.ClearableFileInput(attrs={'class': 'form-control-file'})
         }
 
-
-class UserCarCModelForm(BSModalModelForm):
+class UpdateUserCarForm(BSModalModelForm):
     class Meta:
         model = Car
-        exclude = ['timestamp', 'is_active', 'is_parking']
+        fields = ['license_plate', 'car_model', 'car_color', 'image']
+        widgets = {
+            'license_plate': forms.TextInput(attrs={'class': 'form-control col-md-6'}),
+            'car_model': forms.TextInput(attrs={'class': 'form-control col-md-6'}),
+            'car_color': forms.TextInput(attrs={'class': 'form-control col-md-6'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control-file'})
+        }
+
+
+class UserCarModelForm(BSModalModelForm):
+    class Meta:
+        model = Car
+        fields = ['license_plate', 'car_model', 'car_color','owner']
 
 
 class UpdateInvoiceForm(forms.Form):

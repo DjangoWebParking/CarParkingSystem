@@ -1,7 +1,7 @@
 {% load widget_tweaks %}
 
 {% block modal_content %}
-<form method="post" enctype="multipart/form-data" action="">
+<form method="post" enctype="multipart/form-data" action="{% url 'create_user_car' %}">
   {% csrf_token %}
   <div class="modal-header">
     <h5 class="modal-title">Đăng ký xe</h5>
@@ -25,6 +25,9 @@
     <div class="form-group">
       {{ form.image.label_tag }}
       {{ form.image }}
+    {% if form.instance.image_url %}
+    <img src="{{ form.instance.image_url }}" alt="car image">
+    {% endif %}
     </div>
   </div>
   <div class="modal-footer">

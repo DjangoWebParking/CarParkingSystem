@@ -99,6 +99,7 @@ from bootstrap_modal_forms.generic import (
     BSModalDeleteView
 )
 from google.cloud import storage
+
 client = storage.Client.from_service_account_json('firebase/serviceAccount.json')
 
 import pyrebase
@@ -117,8 +118,6 @@ config = {
 firebase = pyrebase.initialize_app(config)
 authe = firebase.auth()
 storage = firebase.storage()
-
-
 
 
 class SignupView(FormView):
@@ -788,79 +787,110 @@ from .forms import CreateUserCarForm
 from uuid import uuid4
 
 
-class CreateUserCarView(CreateView):
+class CreateUserCarView(BSModalCreateView):
     model = Car
     form_class = CreateUserCarForm
     template_name = 'user_car/create_user_car.html'
-    success_url = reverse_lazy('user_car_list')  # Lỗi is_ajax nếu sai template
-
-    def form_valid(self, form):
-        # Lấy dữ liệu từ form
-        license_plate = form.cleaned_data['license_plate']
-        car_model = form.cleaned_data['car_model']
-        car_color = form.cleaned_data['car_color']
-        image = form.cleaned_data['image']
-
-        # Lưu ảnh lên Firebase Storage
-        if image:
-            # Tạo tên file mới ngẫu nhiên
-            filename = f"{license_plate}-{uuid4().hex}.jpg"
-
-            # Lưu file vào bucket trên Firebase Storage
-            bucket_name = "carparkingsystem-8d374.appspot.com"  # not include gs://
-            bucket = client.bucket(bucket_name)
-            folder_path = "car_images/"
-            blob = bucket.blob(folder_path + filename)
-            blob.upload_from_file(image)
-
-            # Lấy URL của ảnh từ Firebase Storage
-            image_url = blob.public_url
-            print(image_url)
-            # Tạo instance mới để lưu vào database
-            car = Car.objects.create(
-                license_plate=license_plate,
-                car_model=car_model,
-                car_color=car_color,
-                owner=Customer.objects.get(user=self.request.user),
-                image=image,
-                image_url=image_url
-            )
-            car.save()
-            print("Here")
-
-        return super().form_valid(form)
+    success_url = reverse_lazy('user_car_list')
 
     def post(self, request, *args, **kwargs):
-        # Gọi hàm form_valid khi form được validate thành công
-        self.object = None
         form = self.get_form()
         if form.is_valid():
-            self.form_valid(form)
+            # Process the valid form data and return JSON response
+            license_plate = form.cleaned_data['license_plate']
+            car_model = form.cleaned_data['car_model']
+            car_color = form.cleaned_data['car_color']
+            image = form.cleaned_data['image']
+            print("image: ", image)
+            if image is not None:
+                # Tạo tên file mới ngẫu nhiên
+                filename = f"{license_plate}-{uuid4().hex}.jpg"
+
+                # Lưu file vào bucket trên Firebase Storage
+                bucket_name = "carparkingsystem-8d374.appspot.com"  # not include gs://
+                bucket = client.bucket(bucket_name)
+                folder_path = "car_images/"
+                blob = bucket.blob(folder_path + filename)
+                blob.upload_from_string(image.read(), content_type='image/jpeg')
+
+                # Lấy URL của ảnh từ Firebase Storage
+                image_url = blob.public_url
+
+                # Tạo instance mới để lưu vào database
+                car = Car(
+                    license_plate=license_plate,
+                    car_model=car_model,
+                    car_color=car_color,
+                    owner=Customer.objects.get(user=self.request.user),
+                    image=image,
+                    image_url=image_url
+                )
+                car.save()
+
+            # Process the form data and return JSON response
             return redirect('user_car_list')
-
         else:
-            return self.form_invalid(form)
-    def form_invalid(self, form):
-        response = super().form_invalid(form)
-        messages.error(self.request, 'Lỗi: Vui lòng kiểm tra lại thông tin')
-        return response
+            # Handle invalid form data and return JSON response
+            return redirect('create_user_car')
 
 
-from .forms import UserCarCModelForm
+from .forms import UserCarModelForm, UpdateUserCarForm
 
 
 # Update
 class UserCarUpdateView(BSModalUpdateView):
     model = Car
     template_name = 'user_car/update_user_car.html'
-    form_class = UserCarCModelForm
+    form_class = UpdateUserCarForm
     success_message = 'Success: Car was updated.'
     success_url = reverse_lazy('user_car_list')
+
+    def get_object(self, queryset=None):
+        """Retrieve the object to be updated."""
+        return self.get_queryset().get(pk=self.kwargs['pk'])
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            # Process the valid form data and return JSON response
+            license_plate = form.cleaned_data['license_plate']
+            car_model = form.cleaned_data['car_model']
+            car_color = form.cleaned_data['car_color']
+            image = form.cleaned_data['image']
+            if image:
+                # Tạo tên file mới ngẫu nhiên
+                filename = f"{license_plate}-{uuid4().hex}.jpg"
+
+                # Lưu file vào bucket trên Firebase Storage
+                bucket_name = "carparkingsystem-8d374.appspot.com"  # not include gs://
+                bucket = client.bucket(bucket_name)
+                folder_path = "car_images/"
+                blob = bucket.blob(folder_path + filename)
+                blob.upload_from_string(image.read(), content_type='image/jpeg')
+
+                # Lấy URL của ảnh từ Firebase Storage
+                image_url = blob.public_url
+                print(image_url)
+                # Tạo instance mới để lưu vào database
+                self.object.image.name = filename
+                self.object.image_url = image_url
+            # Cập nhật các thông tin khác của instance trong database
+            self.object.license_plate = license_plate
+            self.object.car_model = car_model
+            self.object.car_color = car_color
+            self.object.owner = Customer.objects.get(user=self.request.user)
+            self.object.save()
+            return redirect('user_car_list')
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
+            # return redirect(reverse('update_user_car', kwargs={'pk': self.kwargs['pk']}))
 
 
 # Read
 class UserCarReadView(BSModalReadView):
     model = Car
+    form_class = UserCarModelForm
     template_name = 'user_car/user_car_detail.html'
 
 
@@ -898,11 +928,13 @@ def save_profile(request):
             customer.phone_number = request.POST.get('phone_number')
             customer.card_number = request.POST.get('card_number')
             customer.location = request.POST.get('location')
-            new_password = request.POST.get('password')
-            old_password = request.POST.get('password1')
+            new_password = request.POST.get('new_password')
+            old_password = request.POST.get('password')
+
 
             if not new_password is None and old_password == customer.user.password:
                 customer.user.password = new_password
+
             customer.save()
             messages.success(request, 'Your profile has been updated successfully.')
 

@@ -1,1 +1,0 @@
-<h1>Dashboard for admin</h1>

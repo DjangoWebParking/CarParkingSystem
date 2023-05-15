@@ -64,7 +64,6 @@ class Customer(models.Model):
     last_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=100)
     comment = models.TextField(max_length=5000, blank=True)
-    register_name = models.CharField(max_length=100)
     card_number = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
     reg_date = models.DateTimeField(auto_now_add=True)
@@ -76,7 +75,7 @@ class Car(models.Model):
     car_color = models.CharField(max_length=100)
     owner = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='cars', to_field='id')
     reg_date = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(upload_to='car_images/', null=True)
+    image = models.ImageField(upload_to='car_images/') # Không được null
     image_url = models.CharField(max_length=255, null=True)
     is_active = models.BooleanField(default=False)
     is_parking = models.BooleanField(default=False)
@@ -89,7 +88,7 @@ class Car(models.Model):
             self.owner.user.is_customer = True
             self.owner.user.save()
 
-        bucket = storage.bucket()
+        # bucket = storage.bucket()
         # if not setting.DEBUG:
         #     file_name = 'car_images/' + self.license_plate + '.jpg'
         #     with default_storage.open(self.image.name, 'rb') as image_file:

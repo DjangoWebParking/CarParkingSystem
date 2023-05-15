@@ -46,6 +46,7 @@
         });
     });
 
+
     </script>
 
 
@@ -78,36 +79,21 @@
                         <li class="nav-item active">
                             <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
                         </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'about' %}"> About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'pricing' %}">Pricing</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'whyus' %}">Why Us</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'testimonial' %}">Testimonial</a>
-                        </li>
                         {% if user.is_authenticated %}
+                        {% if user.is_admin %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'show_parking_overview' %}">Parking Lot Overview</a>
+                            <a class="nav-link" href="{% url 'dashboard' %}">Trang quản lý admin</a>
                         </li>
-
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'show_parking_overview' %}">Giao diện đặt xe</a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 Welcome, {{ user.username }}
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                {% if user.is_admin %}
-                                <li class="nav-item"><a class="dropdown-item " href="{% url 'admin:index' %}">Vào trang
-                                    quản lý chung</a></li>
-                                <li class="nav-item"><a class="dropdown-item " href="{% url 'dashboard' %}">Vào trang
-                                    khách hàng</a></li>
-                                {% endif %}
                                 <li class="nav-item"><a class="dropdown-item" href="{% url 'profile' %}">Thông tin cá
                                     nhân</a></li>
                                 <li class="nav-item"><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
