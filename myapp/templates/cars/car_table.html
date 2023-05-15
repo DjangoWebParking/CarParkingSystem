@@ -10,10 +10,21 @@
         <h1 class="text-center">Car List</h1>
         <div class="card mb-3">
             <div class="card-header">
-                <button type="button" class="bs-modal btn btn-sm btn-primary"
-                    data-form-url="{% url 'create_car' %}">
-                    <span class="fa fa-plus"> Add new car</span>
-                </button>
+                <div class="row">
+                    <div class="mx-sm-3">
+                        <button type="button" class="bs-modal btn btn-sm btn-primary"
+                                data-form-url="{% url 'create_car' %}">
+                            <span class="fa fa-plus"> Add new car</span>
+                        </button>
+                    </div>
+                    <select class="form-control mx-sm-3" id="OrderFormControlSelect" name="order-list">
+                        <option value="1">Sort by id</option>
+                        <option value="2">Sort by car name</option>
+                        <option value="3">Sort by date register</option>
+                        <option value="4">Sort by owner name</option>
+                    </select>
+                </div>
+
             </div>
             <div class="card-header">
                 <i class="fas fa-table"></i>
@@ -28,48 +39,49 @@
                 {% endfor %}
                 <table class="table table-striped">
                     <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>License plate</th>
-                            <th>Car model</th>
-                            <th>Car color</th>
-                            <th>Owner</th>
-                            <th>Action</th>
-                        </tr>
+                    <tr>
+                        <th>STT</th>
+                        <th>License plate</th>
+                        <th>Car model</th>
+                        <th>Car color</th>
+                        <th>Owner</th>
+                        <th>Action</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {% for car in cars %}
-                        <tr>
-                            <td>{{ car.id }}</td>
-                            <td>{{ car.license_plate }}</td>
-                            <td>{{ car.car_model }}</td>
-                            <td>{{ car.car_color }}</td>
-                            <td>{{ car.owner.first_name }}</td>
-                            <td>
+                    {% for car in cars %}
+                    <tr>
+                        <td>{{ car.id }}</td>
+                        <td>{{ car.license_plate }}</td>
+                        <td>{{ car.car_model }}</td>
+                        <td>{{ car.car_color }}</td>
+                        <td>{{ car.owner.first_name }}</td>
+                        <td>
 
-                            <td>
-                                <button type="button" class="btn btn-sm btn-primary"
-                                data-toggle="modal" data-target="#car-update-modal" data-form-url="{% url 'car_view' car.pk %}"">
-        <span class=" fa fa-eye">View</span>
-                                </button>
+                        <td>
+                            <button type="button" class="bs-modal btn btn-sm btn-primary"
+                                    data-toggle="modal" data-target="#car-update-modal"
+                                    data-form-url="{% url 'car_view' car.pk %}">
+                            <span class=" fa fa-eye">View</span>
+                            </button>
 
 
-                                <button type="button" class="btn btn-sm btn-warning"
+                            <button type="button" class="bs-modal car-update btn btn-sm btn-warning"
                                     data-form-url="{% url 'car_update' car.pk %}">
-                                    <span class="fa fa-pencil"> Edit</span>
-                                </button>
+                                <span class="fa fa-pencil"> Edit</span>
+                            </button>
 
-                                <button type="button" class="bs-modal btn btn-sm btn-danger"
+                            <button type="button" class="bs-modal btn btn-sm btn-danger"
                                     data-form-url="{% url 'car_delete' car.pk %}">
-                                    <span class="fa fa-trash"> Delete</span>
-                                </button>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4">No cars found.</td>
-                        </tr>
-                        {% endfor %}
+                                <span class="fa fa-trash"> Delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No cars found.</td>
+                    </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -77,7 +89,4 @@
     </div>
 
 </div>
-</div>
-
-
 {% endblock %}

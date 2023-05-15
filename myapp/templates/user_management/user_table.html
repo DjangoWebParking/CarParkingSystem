@@ -1,0 +1,83 @@
+{% block content %}
+<div id="content-wrapper">
+  <div class="container-fluid">
+
+    <!-- <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="#">List Of Cars</a>
+        </li>
+    </ol> -->
+    <h1 class="text-center">User List</h1>
+    <div class="card mb-3">
+      <div class="card-header">
+        <button type="button" class="bs-modal btn btn-sm btn-primary"
+                data-form-url="{% url 'create_customer' %}">
+          <span class="fa fa-plus">Create new user</span>
+        </button>
+      </div>
+      <div class="card-header">
+        <i class="fas fa-table"></i>
+        Information
+      </div>
+      <!--  -->
+      <div class="card-body">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+          {{ message }}
+        </div>
+        {% endfor %}
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th> No </th>
+            <th> Username </th>
+            <th> Date Join</th>
+            <th> Is Active </th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.date_joined }}</td>
+            <td>{{ u.is_active }}</td>
+<!--            <td>{{ customer.phone_number }}</td>-->
+<!--            <td>{{ customer.comment}}</td>-->
+<!--            <td>{{ customer.register_name}}</td>-->
+<!--            <td>{{ customer.card_number}}</td>-->
+            <td>
+              <button type="button" class="read-user btn btn-sm btn-primary"
+                      data-form-url="{% url 'user_view' u.pk %}">
+              <span class=" fa fa-eye">View</span>
+              </button>
+
+              {% if not u.is_active %}
+              <button type="button" class="update-user btn btn-sm btn-warning"
+                      data-form-url="{% url 'active_user' u.pk %}">
+                <span class="fa fa-pencil"> Active</span>
+              </button>
+              {% else %}
+              <button type="button" class="update-user btn btn-sm btn-warning"
+                      data-form-url="{% url 'inactive_user' u.pk %}">
+                <span class="fa fa-pencil"> Inactive </span>
+              </button>
+              {% endif %}
+              <button type="button" class="delete-user btn btn-sm btn-danger"
+                      data-form-url="{% url 'delete_user' u.pk %}">
+                <span class="fa fa-trash"> Delete</span>
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4">No user found.</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+  {% endblock %}

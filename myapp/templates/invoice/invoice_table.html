@@ -1,0 +1,97 @@
+
+{% block content %}
+<div id="content-wrapper">
+  <div class="container-fluid">
+
+    <!-- <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="#">List Of Cars</a>
+        </li>
+    </ol> -->
+    <h1 class="text-center">Car List</h1>
+    <div class="card mb-3">
+      <div class="card-header">
+        <div class="row">
+          <div class="mx-sm-3">
+            <button type="button" class="bs-modal btn btn-sm btn-primary"
+                    data-form-url="{% url 'create_car' %}">
+              <span class="fa fa-plus"> Thêm hóa đơn</span>
+            </button>
+          </div>
+          <select class="form-control mx-sm-3" id="OrderFormControlSelect" name="order-list">
+            <option value="1">Theo số hóa đơn</option>
+            <option value="2">Theo tên khách hàng</option>
+            <option value="3">Ngày thanh toánr</option>
+            <option value="4">Sort by owner name</option>
+          </select>
+        </div>
+
+      </div>
+      <div class="card-header">
+        <i class="fas fa-table"></i>
+        Information
+      </div>
+      <!--  -->
+      <div class="card-body">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+          {{ message }}
+        </div>
+        {% endfor %}
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>STT</th>
+            <th>Số hóa đơn</th>
+            <th>Tên khách hàng</th>
+            <th>Chí phí đỗ</th>
+            <th>Trạng thái thanh toán</th>
+            <th>Ngày thanh toán</th>
+            <th>Hạn thanh toán</th>
+            <th>Action</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for invoice in invoices %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ invoice.invoice_number }}</td>
+            <td>{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
+            <td>{{ invoice.total_fee }}</td>
+            <td>{{ invoice.payment_status }}</td>
+            <td>{{ invoice.invoice_date }}</td>
+            <td>{{ invoice.due_date }}</td>
+            <td>
+            <td>
+              <button type="button" class="btn btn-sm btn-primary"
+                      data-form-url="{% url 'invoice_detail' invoice.pk %}">
+                <a href="{% url 'invoice_detail' invoice.pk %}" style="color:white;">
+                  <span class="fa fa-eye">View</span>
+                </a>
+              </button>
+
+
+              <button type="button" class="bs-modal car-update btn btn-sm btn-warning"
+                      data-form-url="{% url 'update_invoice' invoice.pk %}">
+                <span class="fa fa-pencil"> Edit</span>
+              </button>
+
+              <button type="button" class="bs-modal btn btn-sm btn-danger"
+                      data-form-url="{% url 'delete_invoice' invoice.pk %}">
+                <span class="fa fa-trash"> Delete</span>
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4">Không tìm thấy hóa đơn nào.</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,5 +1,4 @@
 {% load static %}
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -7,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
+    <link rel="shortcut icon" href="{% static 'home/images/favicon.png' %}" type="image/x-icon">
     {% block title %}{% endblock %}
     <title>Hệ thống bãi đỗ xe tự động</title>
 
@@ -45,6 +45,9 @@
 
     <!-- Custom styles for this template-->
     <link href="{% static 'css/new/sb-admin.css' %}" rel="stylesheet">
+
+    <link href="{% static 'parking_overview/style.css' %}" rel="stylesheet">
+
     {% block stylesheet %}{% endblock %}
 </head>
 
@@ -53,7 +56,7 @@
 <!-- headers-->
 <nav class="navbar navbar-expand navbar-dark bg-dark fixed-top">
 
-    <a class="navbar-brand mr-1 text-primary" href="dashboard">TechPark System</a>
+    <a class="navbar-brand mr-1 text-primary" href="{% url 'home' %}">TechPark System</a>
     <button class="btn btn-link btn-sm text-white order-1 order-sm-0" id="sidebarToggle" href="#">
         <i class="fas fa-bars"></i>
     </button>
@@ -93,20 +96,19 @@
 
     <!-- Sidebar -->
     <ul class="sidebar navbar-nav">
-
+        {% if user.is_admin %}
         <li class="nav-item active">
-            <a class="nav-link" href="{% url 'home' %}">
+            <a class="nav-link" href="{% url 'dashboard' %}">
                 <i class="fa fa-home" aria-hidden="true"></i>
-                <span>Home</span>
+                <span>Quản lý</span>
             </a>
         </li>
+        {% endif %}
         <li class="nav-item active">
             <a class="nav-link" href="">
                 <i class="fas fa-user-circle fa-fw text-primary"></i>
-
-
-                <span>{{ user.username }},
-                 {% if user.is_superuser or user.is_admin %}- 
+                <span>Hi {{ user.username }} -
+                 {% if user.is_superuser or user.is_admin %}
                  Admin
             {% else %}     
              User 
@@ -115,7 +117,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'show_parking_lot' %}">
+            <a class="nav-link" href="{% url 'show_parking_overview' %}">
                 <i class="fas fa-car-alt text-primary"></i>
                 <span style="color: white">Parking Lot Overview</span>
             </a>
@@ -134,9 +136,16 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="">
+            <a class="nav-link" href="{% url 'parking_history' %}">
                 <i class="fas fa-car-alt text-primary"></i>
-                <span style="color: white">Paid Car Invoices</span>
+                <span style="color: white">My Parking History</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'customer_invoice_list' %}">
+                <i class="fas fa-car-alt text-primary"></i>
+                <span style="color: white">My Paid Car Invoices</span>
             </a>
         </li>
     </ul>

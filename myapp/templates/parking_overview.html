@@ -1,28 +1,117 @@
 {% extends 'base_user.html' %}
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"
+          xmlns="http://www.w3.org/1999/html">
+
+</head>
+
 {% block content %}
-
-<div class="container">
-  <h2>Parking Slots</h2>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Slot Number</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for slot in slots %}
-      <tr>
-        <td>{{ slot.slot_number }}</td>
-        <td>{% if slot.is_available %}<span class="badge badge-success">Available</span>{% else %}<span class="badge badge-danger">Occupied</span>{% endif %}</td>
-
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<body>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Bãi đỗ xe</h1>
+    {% for parking_slot in parking_slots %}
+    {% if forloop.counter0|divisibleby:3 %}
+    <div class="row">
+        {% endif %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    Vị trí {{ parking_slot.slot_number }}
+                </div>
+                <div class="card-body">
+                    {% if not parking_slot.is_available %}
+                    <div class="car-background">
+                    <p><span class="badge badge-success">Đã đặt</span></p>
+                    </div>
+                    {% else %}
+                    <p>Parking type: {{ parking_slot.get_parking_type_display }}</p>
+                    <p>Cost per day: {{ parking_slot.cost_per_day }}</p>
+                    <p><span class="badge badge-danger">Empty</span></p>
+                    <button type="button" class="bs-modal reserve-slot btn btn-sm btn-primary"
+                            data-form-url="{% url 'reserve_slot' %}"
+                            data-slot-number="{{ parking_slot.slot_number }}">
+                        <span class="fa fa-plus"> Đặt chỗ </span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% if forloop.counter0|add:1|divisibleby:3 or forloop.last %}
+    </div>
+    {% endif %}
+    {% endfor %}
 </div>
 
+<div class="modal fade" id="reservationModal" tabindex="-1" role="dialog" aria-labelledby="reservationModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reservationModalLabel">Đặt chỗ</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Đặt chỗ tại bãi số
+                    <strong> {{ parking_slot.slot_number }}</strong></p>
+                <form method="post" action="{% url 'reserve_slot' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="slot_number" value="{{ parking_slot.slot_number }}">
+                    <div class="form-group">
+                        <label for="car">Chọn xe của bạn:</label>
+                        <select class="form-control" id="car" name="car">
+                            {% for car in cars %}
+                            <option value="{{ car.id }}">{{ car.license_plate }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!--                    <div class="form-group">-->
+                    <!--                        <label for="start_time">Thời gian bắt đầu:</label>-->
+                    <!--                        <input type="datetime-local" class="form-control" id="start_time" name="start_time">-->
+                    <!--                    </div>-->
+                    <!--                    <div class="form-group">-->
+                    <!--                        <label for="end_time">Thời gian kết thúc:</label>-->
+                    <!--                        <input type="datetime-local" class="form-control" id="end_time" name="end_time">-->
+                    <!--                    </div>-->
+                    <button type="submit" class="btn btn-primary">Đặt chỗ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li
+            {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
 {% endblock %}
 
-        <!-- <td>{% if slot.is_available %}<a class="btn btn-primary" href="{% url 'reserve_slot' slot.id %}" role="button">Reserve</a>{% endif %}</td> -->
+{% block extrascripts %}
+<script>
+$(document).ready(function () {
+    $(".reserve-slot").each(function () {
+        $(this).modalForm({ formURL: $(this).data("form-url") });
+    });
+     $(".reserve-slot").click(function () {
+        var formURL = $(this).data("form-url");
+        $("#reservationModal").modal("show");
+        var slotNumber = $(this).data("slot-number"); // Lấy số slot từ button đặt chỗ
+        $("#reservationModal strong").text(slotNumber); // Đặt giá trị số slot vào modal
+        $("#reservationModal input[name=slot_number]").val(slotNumber); // Đặt giá trị số slot vào input của form
+    });
+});
+
+
+
+</script>
+
+</body>
+{% endblock %}
+
+

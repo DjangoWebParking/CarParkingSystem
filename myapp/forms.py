@@ -1,5 +1,5 @@
 from django.forms.utils import ValidationError
-from .models import Customer, Car, ParkingRecord, ParkingSlot
+from .models import Customer, Car, ParkingRecord, ParkingSlot, Invoice
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import Customer
@@ -115,6 +115,8 @@ class UserForm(BSModalModelForm):
         fields = ('username', 'first_name', 'last_name', 'email', 'password')
 
 
+# class UserActiveForm(Mode)
+
 class CarForm(BSModalModelForm):
     # Loi tham so nay forms.ModelForm
     def __init__(self, *args, **kwargs):
@@ -190,3 +192,63 @@ class ParkingRecordDetailForm(BSModalModelForm):
             self.fields['is_paid'].widget.attrs = {
                 'class': 'form-control col-md-6'
             }
+
+
+class CreateUserCarForm(BSModalModelForm):
+    class Meta:
+        model = Car
+        fields = ['license_plate', 'car_model', 'car_color', 'image']
+        widgets = {
+            'license_plate': forms.TextInput(attrs={'class': 'form-control col-md-6'}),
+            'car_model': forms.TextInput(attrs={'class': 'form-control col-md-6'}),
+            'car_color': forms.TextInput(attrs={'class': 'form-control col-md-6'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control-file'})
+        }
+
+
+class UserCarCModelForm(BSModalModelForm):
+    class Meta:
+        model = Car
+        exclude = ['timestamp', 'is_active', 'is_parking']
+
+
+class UpdateInvoiceForm(BSModalModelForm):
+    class Meta:
+        model = Invoice
+        PAYMENT_METHOD_CHOICES = (
+            ('direct', 'Direct'),
+            ('online', 'Online'),
+        )
+        payment_method = forms.ChoiceField(choices=PAYMENT_METHOD_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}))
+        fields = ['invoice_date', 'due_date', 'payment_date', 'payment_method', 'payment_status']
+        widgets = {
+            'invoice_date': forms.DateInput(attrs={'type': 'date'}),
+            'due_date': forms.DateInput(attrs={'type': 'date'}),
+            'payment_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+# class ReservationForm(forms.ModelForm):
+#     cars = forms.ModelMultipleChoiceField(
+#         queryset=Car.objects.none(),
+#         widget=forms.CheckboxSelectMultiple,
+#         required=True,
+#         label='Xe của bạn'
+#     )
+#
+#     class Meta:
+#         model = Reservation
+#         fields = ['start_time', 'end_time', 'parking_slot']
+#         widgets = {
+#             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+#             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+#         }
+#         labels = {
+#             'start_time': 'Thời gian bắt đầu',
+#             'end_time': 'Thời gian kết thúc',
+#             'parking_slot': 'Vị trí đỗ xe'
+#         }
+#
+#     def __init__(self, user, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.fields['parking_slot'].queryset = ParkingSlot.objects.filter(is_available=True)
+#         self.fields['cars'].queryset = Car.objects.filter(owner=user)
+#

@@ -45,7 +45,6 @@ class CreateUpdateAjaxMixin(object):
             instance = super(CreateUpdateAjaxMixin, self).save(commit=False)
         return instance
 
-
 class DeleteMessageMixin(object):
     """
     Mixin which adds message to BSModalDeleteView.

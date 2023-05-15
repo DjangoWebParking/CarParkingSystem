@@ -14,6 +14,19 @@
       </div>
     </div>
 
+<div class="modal fade" id="create-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
 {% endblock body %}
 
 {% block extrascripts %}
@@ -34,29 +47,27 @@
           ].join("");
 
 
-      function updateBookModalForm() {
-            $(".update-book").each(function () {
+      function updateCarModalForm() {
+            $(".update-car").each(function () {
               $(this).modalForm({
                 formURL: $(this).data("form-url"),
                 asyncUpdate: true,
                 asyncSettings: {
                   closeOnSubmit: false,
                   successMessage: asyncSuccessMessageUpdate,
-                  dataUrl: "books/",
+                  dataUrl: "cars/",
                   dataElementId: "#books-table",
                   dataKey: "table",
-                  addModalFormFunction: updateBookModalForm
+                  addModalFormFunction: updateCarModalForm
                 }
               });
             });
           }
-          updateBookModalForm();     
-        
+          updateCarModalForm();
           $(".bs-modal").each(function () {
               $(this).modalForm({formURL: $(this).data("form-url")});
           });
 
-          // Hide message
           $(".alert").fadeTo(2000, 500).slideUp(500, function () {
               $(".alert").slideUp(500);
           });

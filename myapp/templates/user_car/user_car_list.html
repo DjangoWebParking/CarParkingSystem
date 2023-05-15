@@ -9,7 +9,7 @@
         </ol>
         <div class="card mb-3">
             <div class="card-header">
-                <button type="button" class="bs-modal btn btn-sm btn-primary"
+                <button id="create-user-car" type="button" class="bs-modal btn btn-sm btn-primary"
                     data-form-url="{% url 'create_user_car' %}">
                     <span class="fa fa-plus"> Register car</span>
                 </button>
@@ -29,11 +29,12 @@
                         <thead>
                         <tr>
                             <th>No</th>
-                            <th>Car License</th>
-                            <th>Car Model</th>
-                            <th>Car Color</th>
-                            <th>Date Register</th>
-                            <th>Image</th>
+                            <th>Biển số xe</th>
+                            <th>Kiểu xe</th>
+                            <th>Màu xe</th>
+                            <th>Ngày đăng ký</th>
+                            <th>Ảnh</th>
+                            <th colspan="2">Trạng thái</th>
                             <th>Action</th>
                         </tr>
                         </thead>
@@ -43,23 +44,37 @@
                         {% for car in cars %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ car.license_number }}</td>
+                            <td>{{ car.license_plate }}</td>
                             <td>{{ car.car_model }}</td>
                             <td>{{ car.car_color }}</td>
                             <td>{{ car.reg_date }}</td>
-                            <td><img src="{{ car.image }}" alt="data:image/jpeg;base64,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"></td>
+
+                            <td><img style="width:80px;height:120px" src="{{ car.image.url }}" alt="Car image"></td>
+
+
+                            {% if car.is_active %}
+                            <td><span class="badge badge-success">Đã phê duyệt</span></td>
+                            {% else %}
+                            <td><span class="badge badge-danger">Chờ phê duyệt</span></td>
+                            {% endif %}
+
+                            {% if car.is_parking %}
+                            <td><span class="badge badge-success">Xe đã đậu</span></td>
+                            {% else %}
+                            <td><span class="badge badge-danger">Xe chưa đậu</span></td>
+                            {% endif %}
                             <td>
-                                <button type="button" class="bs-modal read-book btn btn-sm btn-primary"
+                                <button type="button" class="bs-modal read-user-car btn btn-sm btn-primary"
                                         data-form-url="{% url 'user_car_detail' car.pk %}">
-                                    <span class="fa fa-eye"></span>
+                                    <span class="fa fa-eye">View</span>
                                 </button>
 
-                                <button type="button" class="update-book btn btn-sm btn-warning"
+                                <button type="button" class="update-user-car btn btn-sm btn-warning"
                                         data-form-url="{% url 'update_user_car' car.pk %}">
-                                    <span class="fa fa-pencil"> Edit</span>
+                                    <span class="fa fa-pencil">Edit</span>
                                 </button>
 
-                                <button type="button" class="bs-modal delete-book btn btn-sm btn-danger"
+                                <button type="button" class="bs-modal delete-user-car btn btn-sm btn-danger"
                                         data-form-url="{% url 'delete_user_car' car.pk %}">
                                     <span class="fa fa-trash"> Delete</span>
                                 </button>
@@ -95,6 +110,42 @@
         </div>
     </div>
 </div>
-</tbody>
-</table>
+
+<div class="modal fade" id="create-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
 {% endblock %}
+
+{% block extrascripts %}
+<script type="text/javascript">
+
+
+    $(document).ready(function() {
+    $(".read-user-car").each(function () {
+        $(this).modalForm({formURL: $(this).data("form-url")});
+    });
+
+    $(".delete-user-car").each(function () {
+        $(this).modalForm({formURL: $(this).data("form-url"), isDeleteForm: true});
+    });
+    $("#create-user-car").modalForm({
+        formURL: "{% url 'create_user_car' %}"
+    });
+     $(".update-user-car").each(function () {
+        $(this).modalForm({formURL: $(this).data("form-url")});
+    });
+});
+</script>
+{% endblock %}
+
+

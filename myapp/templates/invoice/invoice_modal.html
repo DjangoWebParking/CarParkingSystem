@@ -1,0 +1,57 @@
+<!-- Modal -->
+<div class="modal fade" id="invoiceModal" tabindex="-1" role="dialog" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="invoiceModalLabel">Hóa đơn #{{ invoice.invoice_number }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+          <tr>
+            <th scope="col">Mô tả</th>
+            <th scope="col">Số tiền</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>Phí đỗ xe ({{ invoice.parking_duration }} giờ)</td>
+            <td>${{ invoice.parking_fee }}</td>
+          </tr>
+          {% if invoice.extra_fee %}
+          <tr>
+            <td>Phí extra</td>
+            <td>${{ invoice.extra_fee }}</td>
+          </tr>
+          {% endif %}
+          <tr>
+            <th scope="row">Tổng cộng</th>
+            <td>${{ invoice.total_fee }}</td>
+          </tr>
+          </tbody>
+        </table>
+        {% if not invoice.payment_status %}
+        <form action="{% url 'pay_invoice' invoice.id %}" method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="payment_date">Ngày thanh toán:</label>
+            <input type="date" class="form-control" id="payment_date" name="payment_date">
+          </div>
+          <div class="form-group">
+            <label for="payment_method">Phương thức thanh toán:</label>
+            <select class="form-control" id="payment_method" name="payment_method">
+              <option value="cash">Tiền mặt</option>
+              <option value="credit_card">Thẻ tín dụng</option>
+              <option value="paypal">PayPal</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Gửi</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

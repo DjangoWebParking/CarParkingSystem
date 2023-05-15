@@ -45,8 +45,8 @@
             $(this).next('.dropdown-menu').toggle();
         });
     });
-</script>
 
+    </script>
 
 
 </head>
@@ -61,7 +61,7 @@
     <header class="header_section">
         <div class="container">
             <nav class="navbar navbar-expand-lg custom_nav-container ">
-                <a class="navbar-brand" href="index.html">
+                <a class="navbar-brand" href="{% url 'home' %}">
             <span>
               Paspark
             </span>
@@ -80,27 +80,36 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="/home/about.html"> About</a>
+                            <a class="nav-link" href="{% url 'about' %}"> About</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/home/pricing.html">Pricing</a>
+                            <a class="nav-link" href="{% url 'pricing' %}">Pricing</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/home/why.html">Why Us</a>
+                            <a class="nav-link" href="{% url 'whyus' %}">Why Us</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/home/testimonial.html">Testimonial</a>
+                            <a class="nav-link" href="{% url 'testimonial' %}">Testimonial</a>
                         </li>
                         {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'show_parking_overview' %}">Parking Lot Overview</a>
+                        </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 Welcome, {{ user.username }}
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li class="nav-item"><a class="dropdown-item " href="{% url 'admin:index' %}">Vào trang quản lý chung</a></li>
-                                <li class="nav-item"><a class="dropdown-item " href="{% url 'dashboard' %}">Vào trang khách hàng</a></li>
-                                <li class="nav-item"><a class="dropdown-item" href="{% url 'profile' %}">Thông tin cá nhân</a></li>
+                                {% if user.is_admin %}
+                                <li class="nav-item"><a class="dropdown-item " href="{% url 'admin:index' %}">Vào trang
+                                    quản lý chung</a></li>
+                                <li class="nav-item"><a class="dropdown-item " href="{% url 'dashboard' %}">Vào trang
+                                    khách hàng</a></li>
+                                {% endif %}
+                                <li class="nav-item"><a class="dropdown-item" href="{% url 'profile' %}">Thông tin cá
+                                    nhân</a></li>
                                 <li class="nav-item"><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                             </ul>
                         </li>

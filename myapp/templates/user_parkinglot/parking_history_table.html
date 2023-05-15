@@ -1,0 +1,71 @@
+{% block content %}
+<div id="content-wrapper">
+  <div class="container-fluid">
+    <h1 class="text-center">Parking history</h1>
+    <div class="card mb-3">
+      <div class="card-header">
+        <button type="button" class="bs-modal btn btn-sm btn-primary"
+                data-form-url="{% url 'create_customer' %}">
+          <span class="fa fa-plus"> Add new customer</span>
+        </button>
+      </div>
+      <div class="card-header">
+        <i class="fas fa-table"></i>
+        Information
+      </div>
+      <!--  -->
+      <div class="card-body">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+          {{ message }}
+        </div>
+        {% endfor %}
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th> No</th>
+            <th> Car License Number</th>
+            <th> Slot number</th>
+            <th> Start time </th>
+            <th> End time</th>
+            <th> Status </th>
+            <th> Paid status </th>
+            <th> Action </th>
+          </tr>
+          </thead>
+          <tbody>
+          {% if parking_records %}
+          {% for record in parking_records %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ record.car.license_plate }}</td>
+            <td>{{ record.parking_slot.slot_number }}</td>
+            <td>{{ record.entry_time }}</td>
+            <td>{{ record.exit_time }}</td>
+            <td>{{ record.car.is_parking }}</td>
+            <td>{{ record.is_paid}}</td>
+            <td>
+              <button type="button" class="bs-modal read-book btn btn-sm btn-primary"
+                      data-form-url="">
+                <span class="fas fa-comments-dollar">Pay</span>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+          {% else %}
+          <tr>
+            <td colspan="4">No parking history found..</td>
+          </tr>
+          {% endif %}
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
+
+
+
+
+
