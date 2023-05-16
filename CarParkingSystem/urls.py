@@ -60,11 +60,8 @@ urlpatterns = [
     path('listvehicle/', views.ListVehicle.as_view(), name='listvehicle'),
     path('view_vehicle/<int:pk>',
          views.VehicleReadView.as_view(), name='view_vehicle'),
-    # path('view_car/<int:pk>', views.CarReadView.as_view(), name='view_car'),
-    # path('view_user/<int:pk>', views.UserReadView.as_view(), name='view_user'),
     path('update_vehicle/<int:pk>',
          views.VehicleUpdateView.as_view(), name='update_vehicle'),
-    # path('update_car/<int:pk>', views.CarUpdateView.as_view(), name='update_car'),
     path('delete_vehicle/<int:pk>',
          views.VehicleDeleteView.as_view(), name='delete_vehicle'),
 
@@ -73,18 +70,18 @@ urlpatterns = [
     path('car_list/', user_passes_test(is_admin)(views.showCarList), name='car_list'),
     path('car_list/<int:pk>', login_required(user_passes_test(is_admin)(views.CarDetailView.as_view())),
          name='car_view'),  # id_car
-    path('create_car/', views.CarCreateView.as_view(), name='create_car'),
-    path('update_car/<int:pk>', views.CarUpdateView.as_view(), name='car_update'),
-    path('delete_car/<int:pk>', views.CarDeleteView.as_view(), name='car_delete'),
+    path('create_car/', user_passes_test(is_admin)(views.CarCreateView.as_view()), name='create_car'),
+    path('update_car/<int:pk>', user_passes_test(is_admin)(views.CarUpdateView.as_view()), name='car_update'),
+    path('delete_car/<int:pk>', user_passes_test(is_admin)(views.CarDeleteView.as_view()), name='car_delete'),
 
-    path('customer_list/', views.showCustomerList, name='customer_list'),
-    path('customer_list/<int:pk>', views.CustomerDetailView.as_view(),
+    path('customer_list/', user_passes_test(is_admin)(views.showCustomerList), name='customer_list'),
+    path('customer_list/<int:pk>', user_passes_test(is_admin)(views.CustomerDetailView.as_view()),
          name='customer_view'),  # id_car
-    path('create_customer/', views.CustomerCreateView.as_view(), name='create_customer'),
+    path('create_customer/', user_passes_test(is_admin)(views.CustomerCreateView.as_view()), name='create_customer'),
     path('update_customer/<int:pk>',
-         views.CustomerUpdateView.as_view(), name='customer_update'),
+         user_passes_test(is_admin)(views.CustomerUpdateView.as_view()), name='customer_update'),
     path('delete_customer/<int:pk>',
-         views.CustomerDeleteView.as_view(), name='customer_delete'),
+         user_passes_test(is_admin)(views.CustomerDeleteView.as_view()), name='customer_delete'),
     path('parking_slot/',
          views.showParkingLot, name='show_parking_lot'),
     path('create_parking_slot/',
@@ -92,13 +89,13 @@ urlpatterns = [
 
     # Parking Record
     path('parking_record/parking_record_list',
-         views.ParkingRecordView.as_view(), name='parking_record_list'),
+         user_passes_test(is_admin)(views.ParkingRecordListView), name='parking_record_list'),
     path('parking_record/create_parking_record',
-         views.CreateParkingRecordView.as_view(), name='create_parking_record'),
+         user_passes_test(is_admin)(views.CreateParkingRecordView.as_view()), name='create_parking_record'),
     path('parking_record/update_parking_record/<int:pk>',
-         views.ParkingRecordUpdateView.as_view(), name='update_parking_record'),
+         user_passes_test(is_admin)(views.ParkingRecordUpdateView.as_view()), name='update_parking_record'),
     path('parking_record/delete_parking_record/<int:pk>',
-         views.ParkingRecordDeleteView.as_view(), name='delete_parking_record'),
+         user_passes_test(is_admin)(views.ParkingRecordDeleteView.as_view()), name='delete_parking_record'),
     path('parking_record_detail/<int:pk>/',
          views.ParkingRecordDetailView.as_view(), name='parking_record_detail'),
     path('parking-record/<int:pk>/',
@@ -120,11 +117,11 @@ urlpatterns = [
     path('save_profile/', views.save_profile, name='save_profile'),
 
     # User management:
-    path('admin/user_list/', views.UserView.as_view(), name='user_list'),  # id_car
-    path('admin/active_user/<int:pk>', views.UserActiveView.as_view(), name='active_user'),
-    path('admin/inactive_user/<int:pk>', views.UserInactiveView.as_view(), name='inactive_user'),
-    path('admin/delete_user/<int:pk>', views.UserDeleteView.as_view(), name='delete_user'),
-    path('admin/user_view/<int:pk>', views.UserDetailView.as_view(), name='user_view'),
+    path('user_list/', user_passes_test(is_admin)(views.UserView.as_view()), name='user_list'),  # id_car
+    path('active_user/<int:pk>', user_passes_test(is_admin)(views.UserActiveView.as_view()), name='active_user'),
+    path('inactive_user/<int:pk>', user_passes_test(is_admin)(views.UserInactiveView.as_view()), name='inactive_user'),
+    path('delete_user/<int:pk>', user_passes_test(is_admin)(views.UserDeleteView.as_view()), name='delete_user'),
+    path('user_view/<int:pk>', user_passes_test(is_admin)(views.UserDetailView.as_view()), name='user_view'),
 
     #Đặt chỗ
     path('reserve_slot/', views.ReserveSlotView.as_view(), name='reserve_slot'),
@@ -133,13 +130,15 @@ urlpatterns = [
     path('my_parking_history/', views.parking_history, name='parking_history'),
 
     # Invoices Admin Management:
-    path('invoices/', views.InvoiceListView.as_view(), name='invoice_list'),
-    path('invoice/<int:pk>/', views.InvoiceDetailView.as_view(), name='invoice_detail'),
-    path('update_invoice/<int:pk>/', views.InvoiceUpdateView.as_view(), name='update_invoice'),
-    path('delete_invoice/<int:pk>/', views.InvoiceDeleteView.as_view(), name='delete_invoice'),
+    path('invoices/', user_passes_test(is_admin)(views.InvoiceListView.as_view()), name='invoice_list'),
+    path('invoice/<int:pk>/', user_passes_test(is_admin)(views.InvoiceDetailView.as_view()), name='invoice_detail'),
+    path('update_invoice/<int:pk>/', user_passes_test(is_admin)(views.InvoiceUpdateView.as_view()), name='update_invoice'),
+    path('delete_invoice/<int:pk>/', user_passes_test(is_admin)(views.InvoiceDeleteView.as_view()), name='delete_invoice'),
+
     path('pay-invoice/<int:invoice_id>/', views.pay_invoice, name='pay_invoice'),
     # Invoices Of Customer:
     path('customer_invoices/', views.customer_invoices, name='customer_invoice_list'),
+    path('customer_invoices/<int:pk>/', views.CustomerInvoiceDetail.as_view(), name='customer_invoice_detail'),
     # đường dẫn để in hóa đơn
     path('invoice-print/<int:invoice_id>/', views.invoice_print, name='invoice_print'),
     path('get_customer_info/',views.get_customer_info,name='get_customer_info'),

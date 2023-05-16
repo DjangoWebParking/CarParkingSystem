@@ -70,10 +70,9 @@
                                         </div>
                                         <div class="form-group">
 
-                                            <label for="email"><h4>Location</h4></label>
-                                            <input type="text" class="form-control" id="location"
-                                                   title="enter a location"
-                                                   value="{{customer.location}}">
+                                            <label for="location"><h4>Location</h4></label>
+                                            <input type="text" class="form-control" id="location" name="location"
+                                                   title="enter a location" value="{{customer.location}}"/>
                                         </div>
                                         <div class="form-group">
 
@@ -91,7 +90,7 @@
                                                    placeholder="new password" title="enter your new password.">
                                         </div>
 
-                                        <label for="confirm_new_password"><h4> Verify New Password (can be blank if dont
+                                        <label for="confirm_new_password"><h4> Verify new password (can be blank if dont
                                             want to
                                             change)</h4></label>
                                         <input type="password" class="form-control" name="confirm_new_password"
@@ -178,6 +177,12 @@
       {% endfor %}
     {% endif %}
   });
+
+
+
+
+
+
 
 
 

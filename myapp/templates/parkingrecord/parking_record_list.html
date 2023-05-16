@@ -36,8 +36,8 @@
     ].join("");
 
 
-    function updateBookModalForm() {
-      $(".update-book").each(function () {
+    function updateParkingRecordModalForm() {
+      $(".update-parking-record").each(function () {
         $(this).modalForm({
           formURL: $(this).data("form-url"),
           asyncUpdate: true,
@@ -47,18 +47,17 @@
             dataUrl: "books/",
             dataElementId: "#books-table",
             dataKey: "table",
-            addModalFormFunction: updateBookModalForm
+            addModalFormFunction: updateParkingRecordModalForm
           }
         });
       });
     }
-    updateBookModalForm();
+    updateParkingRecordModalForm();
 
     $(".bs-modal").each(function () {
       $(this).modalForm({ formURL: $(this).data("form-url") });
     });
 
-    // Hide message
     $(".alert").fadeTo(2000, 500).slideUp(500, function () {
       $(".alert").slideUp(500);
     });

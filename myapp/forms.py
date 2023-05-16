@@ -88,7 +88,7 @@ class CustomerForm(BSModalModelForm):
 
     class Meta:
         model = Customer
-        fields = ('first_name', 'last_name', 'phone_number', 'comment')
+        fields = ('first_name', 'last_name', 'phone_number', 'card_number','comment')
 
 
 class UserForm(BSModalModelForm):
@@ -156,7 +156,7 @@ class CreateParkingRecordForm(forms.ModelForm):
         }
 
 
-class UpdateParkingRecordForm(forms.ModelForm):
+class UpdateParkingRecordForm(BSModalModelForm):
     class Meta:
         model = ParkingRecord
         fields = ['car', 'parking_slot', 'total_cost', 'is_paid', 'exit_time']
@@ -237,29 +237,3 @@ class UpdateInvoiceForm(forms.Form):
             'due_date': forms.DateInput(attrs={'type': 'date'}),
             'payment_date': forms.DateInput(attrs={'type': 'date'}),
         }
-# class ReservationForm(forms.ModelForm):
-#     cars = forms.ModelMultipleChoiceField(
-#         queryset=Car.objects.none(),
-#         widget=forms.CheckboxSelectMultiple,
-#         required=True,
-#         label='Xe của bạn'
-#     )
-#
-#     class Meta:
-#         model = Reservation
-#         fields = ['start_time', 'end_time', 'parking_slot']
-#         widgets = {
-#             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
-#             'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
-#         }
-#         labels = {
-#             'start_time': 'Thời gian bắt đầu',
-#             'end_time': 'Thời gian kết thúc',
-#             'parking_slot': 'Vị trí đỗ xe'
-#         }
-#
-#     def __init__(self, user, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.fields['parking_slot'].queryset = ParkingSlot.objects.filter(is_available=True)
-#         self.fields['cars'].queryset = Car.objects.filter(owner=user)
-#

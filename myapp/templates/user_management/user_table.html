@@ -10,10 +10,38 @@
     <h1 class="text-center">User List</h1>
     <div class="card mb-3">
       <div class="card-header">
-        <button type="button" class="bs-modal btn btn-sm btn-primary"
-                data-form-url="{% url 'create_customer' %}">
-          <span class="fa fa-plus">Create new user</span>
-        </button>
+        <div class="row">
+          <div class="col-sm-9">
+            <form method="GET" action="{% url 'user_list' %}">
+              <div class="form-inline d-flex align-items-center">
+                <button type="button" class="bs-modal btn ml-2 mr-2 btn-primary"
+                        data-form-url="{% url 'create_customer' %}">
+                  <span class="fa fa-plus mr-2 "> Create user</span>
+                </button>
+
+                <select class="form-control mr-2" id="OrderFormControlSelect" name="order-list" value="{{orderType}}">
+                  <option value="1" {% if orderType == '1' %}selected{% endif %}>Sort by id </option>
+                  <option value="2" {% if orderType == '2' %}selected{% endif %}>Sort by username
+                  </option>
+                  <option value="3" {% if orderType == '3' %}selected{% endif %}>Sort by date join
+                  </option>
+                  <option value="4" {% if orderType == '4' %}selected{% endif %}>Sort by is active
+                  </option>
+                </select>
+
+                <button type="submit" class="btn btn-sm btn-secondary mr-2" id="sortButton">
+                  Sort
+                </button>
+                <input type="text" class="form-control" name="search" placeholder="Search"
+                       value="{{ search_query }}">
+                <button type="submit" class="btn btn-sm btn-primary ml-2" id="searchButton">
+                  Search
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
       </div>
       <div class="card-header">
         <i class="fas fa-table"></i>
@@ -42,10 +70,6 @@
             <td>{{ u.username }}</td>
             <td>{{ u.date_joined }}</td>
             <td>{{ u.is_active }}</td>
-<!--            <td>{{ customer.phone_number }}</td>-->
-<!--            <td>{{ customer.comment}}</td>-->
-<!--            <td>{{ customer.register_name}}</td>-->
-<!--            <td>{{ customer.card_number}}</td>-->
             <td>
               <button type="button" class="read-user btn btn-sm btn-primary"
                       data-form-url="{% url 'user_view' u.pk %}">
@@ -76,6 +100,41 @@
           {% endfor %}
           </tbody>
         </table>
+
+        {% if is_paginated %}
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&order-list={{ orderType }}&search={{ search_query }}">&laquo; Previous</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">&laquo; Previous</span>
+          </li>
+          {% endif %}
+          {% for i in paginator.page_range %}
+          {% if page_obj.number == i %}
+          <li class="page-item active">
+            <span class="page-link">{{ i }} <span class="sr-only">(current)</span></span>
+          </li>
+          {% else %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ i }}&order-list={{ orderType }}&search={{ search_query }}">{{ i }}</a>
+          </li>
+          {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}&order-list={{ orderType }}&search={{ search_query }}">Next &raquo;</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">Next &raquo;</span>
+          </li>
+          {% endif %}
+        </ul>
+        {% endif %}
+
       </div>
     </div>
   </div>

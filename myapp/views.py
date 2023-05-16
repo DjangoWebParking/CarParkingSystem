@@ -372,20 +372,42 @@ class CarAPIList(generics.ListCreateAPIView):
     # template = ''
 
 
+from django.db.models import Q
+
+
 def showCarList(request):
     orderType = request.GET.get('order-list')
-    cars = Car.objects.all()
-    if orderType == 1:
-        cars = Car.objects.order_by('id')
-    elif orderType == 2:
-        cars = Car.objects.order_by('owner.lastname')
-    elif orderType == 3:
-        cars = Car.objects.order_by('reg_date')
+    search_query = request.GET.get('search')
+    cars = Car.objects.order_by('id').all()
+    if search_query is None:
+        search_query = ''
+    if search_query:
+        filtered_cars = cars.filter(
+            Q(license_plate__icontains=search_query) |
+            Q(car_model__icontains=search_query) |
+            Q(car_color__icontains=search_query) |
+            Q(owner__first_name__icontains=search_query) |
+            Q(owner__last_name__icontains=search_query)
+        )
+    else:
+        filtered_cars = cars
 
-    paginator = Paginator(cars, 10)
+    if orderType == '1':
+        filtered_cars = filtered_cars.order_by('id')
+    elif orderType == '2':
+        filtered_cars = filtered_cars.order_by('car_model')
+    elif orderType == '3':
+        filtered_cars = filtered_cars.order_by('reg_date')
+    elif orderType == '4':
+        filtered_cars = filtered_cars.order_by('owner__last_name')
+    print("filter_cars", filtered_cars)
+    paginator = Paginator(filtered_cars, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    context = {'cars': cars, 'page_obj': page_obj}
+    # context = {'cars': cars, 'page_obj': page_obj, 'orderType': orderType, 'search_query': search_query}  # Thêm context
+    context = {'cars': page_obj, 'page_obj': page_obj, 'orderType': orderType,
+               'search_query': search_query, 'is_paginated': page_obj.has_other_pages(),
+               'paginator': paginator}  # Thêm context
     return render(request, 'cars/car_list.html', context)
 
 
@@ -469,9 +491,35 @@ class CarDeleteView(BSModalDeleteView):
 
 
 def showCustomerList(request):
-    customers = Customer.objects.all()
-    # print(customers)
-    context = {'customers': customers}
+    orderType = request.GET.get('order-list')
+    search_query = request.GET.get('search')
+    if not orderType:
+        orderType=1
+    if not search_query:
+        search_query=''
+    customers = Customer.objects.order_by('id')
+
+    if search_query:
+        customers = customers.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(card_number__icontains=search_query)
+        )
+
+    if orderType == '1':
+        customers = customers.order_by('id')
+    elif orderType == '2':
+        customers = customers.order_by('first_name')
+    elif orderType == '3':
+        customers = customers.order_by('reg_date')
+
+    paginator = Paginator(customers, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {'customers': page_obj, 'page_obj': page_obj, 'orderType': orderType,
+               'search_query': search_query, 'is_paginated': page_obj.has_other_pages(),
+               'paginator': paginator}  # Thêm context
     return render(request, 'customers/customer_list.html', context)
 
 
@@ -545,12 +593,29 @@ class CreateParkingSlotView(CreateView):
 
 # Create Parking Record View
 
+def ParkingRecordListView(request):
+    orderType = request.GET.get('order-list')
 
-class ParkingRecordView(ListView):
-    model = ParkingRecord
-    template_name = 'parkingrecord/parking_record_list.html'
-    context_object_name = 'parkingrecords'
-    paginate_by = 5
+    parking_records = ParkingRecord.objects.order_by('id').all()
+
+    if orderType == '1':
+        parking_records = parking_records.order_by('id')
+    elif orderType == '2':
+        parking_records = parking_records.order_by('entry_time')
+    elif orderType == '3':
+        parking_records = parking_records.order_by('exit_time')
+    elif orderType == '4':
+        parking_records = parking_records.order_by('total_cost')
+    elif orderType == '5':
+        parking_records = parking_records.order_by('is_paid')
+
+    paginator = Paginator(parking_records, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {'parking_records': page_obj, 'page_obj': page_obj, 'orderType': orderType,
+               'is_paginated': page_obj.has_other_pages(),
+               'paginator': paginator}  # Thêm context
+    return render(request, 'parkingrecord/parking_record_list.html', context)
 
 
 class CreateParkingRecordView(CreateView):
@@ -617,24 +682,13 @@ class ParkingRecordDetailView(BSModalReadView):
     template_name = 'parkingrecord/parking_record_detail.html'
     form_class = ParkingRecordDetailForm
 
-    def get_object(self, queryset=None):
-        return ParkingRecord.objects.get(id=self.kwargs['pk'])
-
-    def render_to_response(self, context, **response_kwargs):
-        html = render_to_string(self.template_name, context=context)
-        return JsonResponse({'html': html})
-
 
 class ParkingRecordUpdateView(BSModalUpdateView):
     model = ParkingRecord
     template_name = 'parkingrecord/update_parking_record.html'
     form_class = UpdateParkingRecordForm
-    success_message = 'Parking record update succesfully'
+    success_message = 'Parking record update successfully'
     success_url = reverse_lazy('parking_record_list')
-
-    # def get(self, request):
-    #     print("Hello")
-    #     return render(request, self.template_name)
 
 
 class ParkingRecordDeleteView(BSModalDeleteView):
@@ -662,10 +716,6 @@ def show_parking_overview(request):
     return render(request, 'parking_overview.html', {'parking_slots': parking_slots, 'cars': cars})
 
 
-# def reserse_slot(request, pk):
-#     ps = ParkingSlot.objects.filter(id=pk)
-#
-#     return redirect('show_home')
 def display_invoice(request, parking_record_id):
     try:
         parking_record = ParkingRecord.objects.get(id=parking_record_id)
@@ -732,39 +782,6 @@ def exit(request):
             # Handle the case where there is no matching ParkingRecord object
             messages.error(request, 'No parking record found for this parking slot.')
             return redirect(reverse('show_parking_overview'))
-
-
-# def exitUserSide(request):
-#     if request.method == 'POST':
-#         try:
-#             parking_slot_pk = request.POST.get('parking_slot_pk')
-#             # Do something with the parking_slot_pk, for example:
-#             parking_slot = ParkingSlot.objects.get(pk=parking_slot_pk)
-#
-#             parking_record = ParkingRecord.objects.get(parking_slot=parking_slot, exit_time=None)
-#
-#             parking_record.exit_time = timezone.now()
-#             # print('exit_time: ',parking_record.exit_time)
-#             timedelta = parking_record.exit_time - parking_record.entry_time
-#             # print(total_hour)
-#             total_seconds = timedelta.total_seconds()
-#             rounded_hours = round(total_seconds / 3600)
-#             parking_record.total_cost = rounded_hours * parking_slot.cost_per_hour
-#             parking_record.save()
-#             parking_slot.is_available = True
-#             # parking_slot.exit_time = timezone.now()
-#             parking_slot.save()
-#
-#             car = Car.objects.get(id=parking_record.car.id)
-#             car.is_parking = False
-#             car.save()
-#             messages.success(request, 'Cập nhật trạng thái chỗ đậu xe thành công.')
-#             return redirect(reverse('show_parking_lot'))
-#
-#         except ParkingRecord.DoesNotExist:
-#             # Handle the case where there is no matching ParkingRecord object
-#             messages.error(request, 'No parking record found for this parking slot.')
-#             return redirect(reverse('show_parking_overview'))
 
 
 class UserCarList(ListView):
@@ -933,7 +950,8 @@ def save_profile(request):
 
             if not new_password is None and old_password == customer.user.password:
                 customer.user.password = new_password
-
+            if customer.reg_date is None:
+                customer.reg_date = timezone.now()
             customer.save()
             messages.success(request, 'Your profile has been updated successfully.')
 
@@ -947,19 +965,27 @@ class UserView(ListView):
     model = User
     template_name = 'user_management/user_list.html'
 
-    # context_object_name = 'users'
     def get(self, request):
         users = User.objects.filter(is_customer=True)
-        return render(request, self.template_name, {'users': users})
+        orderType = request.GET.get('order-list')
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     try:
-    #         customer = Customer.objects.get(user=self.request.user)
-    #     except ObjectDoesNotExist:
-    #         customer = None
-    #     context['customer'] = customer
-    #     return context
+
+        if orderType == '1':
+            users = users.order_by('id')
+        elif orderType == '2':
+            users = users.order_by('username')
+        elif orderType == '3':
+            users = users.order_by('date_join')
+        elif orderType == '4':
+            users = users.order_by('is_active')
+
+        paginator = Paginator(users, 1)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context = {'users': page_obj, 'page_obj': page_obj, 'orderType': orderType,
+                   'is_paginated': page_obj.has_other_pages(),
+                   'paginator': paginator}  # Thêm context
+        return render(request, self.template_name, {'users': users})
 
 
 class UserActiveView(BSModalUpdateView):
@@ -1008,23 +1034,6 @@ class UserDetailView(BSModalDeleteView):
     success_url = reverse_lazy('user_list')
 
 
-# from .forms import ReservationForm
-
-# @login_required
-# def reserve_slot(request):
-#     if request.method == 'POST':
-#         form = ReservationForm(request.user, request.POST)
-#         if form.is_valid():
-#             reservation = form.save(commit=False)
-#             reservation.user = request.user
-#             reservation.save()
-#             form.save_m2m()
-#             messages.success(request, 'Đặt chỗ thành công')
-#             return redirect('parking_slots')
-#     else:
-#         form = ReservationForm(request.user)
-#     return render(request, 'parking/reserve_slot.html', {'form': form})
-
 class ReserveSlotView(BSModalReadView):
     def post(self, request):
         car_id = request.POST.get('car')
@@ -1045,20 +1054,35 @@ class ReserveSlotView(BSModalReadView):
         car.save()
         return redirect('show_parking_overview')
 
-    # def get(self, request,pk):
-    #     customer = Customer.objects.get(user=request.user)
-    #     cars = Car.objects.filter(owner=customer)
-    #     return render(request, 'parkingslots/reserve_slot.html', {'cars': cars})
-
 
 ## Hiển thị lịch sử:
 def parking_history(request):
     customer = Customer.objects.get(user=request.user)
-    # car = Car.objects.get(owner=customer)
-    # parking_records = ParkingRecord.objects.filter(car=car)
     cars = customer.cars.all()
     parking_records = ParkingRecord.objects.filter(car__in=cars)
-    return render(request, 'user_parkinglot/parking_history_list.html', {'parking_records': parking_records})
+
+    orderType = request.GET.get('order-list')
+    search_query = request.GET.get('search')
+    if orderType == '1':
+        parking_records = parking_records.order_by('id')
+    elif orderType == '2':
+        parking_records = parking_records.order_by('entry_time')
+    elif orderType == '3':
+        parking_records = parking_records.order_by('exit_time')
+    elif orderType == '4':
+        parking_records = parking_records.order_by('total_cost')
+    elif orderType == '5':
+        parking_records = parking_records.order_by('is_paid')
+
+    paginator = Paginator(parking_records, 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {'parking_records': page_obj, 'page_obj': page_obj, 'orderType': orderType,
+               'is_paginated': page_obj.has_other_pages(),
+               'paginator': paginator}  # Thêm context
+
+    return render(request, 'user_parkinglot/parking_history_list.html', context)
 
 
 ## Xử lý phương thức thanh toán:
@@ -1089,12 +1113,79 @@ class InvoiceListView(ListView):
     template_name = 'invoice/invoice_list.html'  # tên template hiển thị
     context_object_name = 'invoices'  # tên biến context để truyền dữ liệu sang template
 
+    def get(self, request):
+        orderType = request.GET.get('order-list')
+        search_query = request.GET.get('search')
+        if search_query is None:
+            search_query = ''
+        invoices = Invoice.objects.all()
+
+        if search_query:
+            filtered_invoices = invoices.filter(
+                Q(invoice_number__icontains=search_query) |
+                Q(customer__last_name__icontains=search_query)
+            )
+        else:
+            filtered_invoices = invoices
+
+        if orderType == '1':
+            filtered_invoices = filtered_invoices.order_by('id')
+        elif orderType == '2':
+            filtered_invoices = filtered_invoices.order_by('customer__first_name')
+        elif orderType == '3':
+            filtered_invoices = filtered_invoices.order_by('payment_date')
+        elif orderType == '4':
+            filtered_invoices = filtered_invoices.order_by('total_fee')
+        print("invoices", filtered_invoices)
+        paginator = Paginator(filtered_invoices, 5)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context = {'invoices': page_obj, 'page_obj': page_obj, 'orderType': orderType,
+                   'search_query': search_query, 'is_paginated': page_obj.has_other_pages(),
+                   'paginator': paginator}  # Thêm context
+        return render(request, self.template_name, context)
+
 
 def customer_invoices(request):
     customer = Customer.objects.get(user=request.user)
-    print("Hello ", customer.id)
     customer_invoices = Invoice.objects.filter(customer=customer)
-    return render(request, 'invoice/customer_invoice_list.html', {'customer_invoices': customer_invoices})
+
+    orderType = request.GET.get('order-list')
+    search_query = request.GET.get('search')
+    if search_query is None:
+        search_query = ''
+    customer_invoices = Invoice.objects.all()
+
+    if search_query:
+        filtered_invoices = customer_invoices.filter(
+            Q(invoice_number__icontains=search_query) |
+            Q(customer__last_name__icontains=search_query)
+        )
+    else:
+        filtered_invoices = customer_invoices
+
+    if orderType == '1':
+        filtered_invoices = filtered_invoices.order_by('id')
+    elif orderType == '2':
+        filtered_invoices = filtered_invoices.order_by('customer__first_name')
+    elif orderType == '3':
+        filtered_invoices = filtered_invoices.order_by('payment_date')
+    elif orderType == '4':
+        filtered_invoices = filtered_invoices.order_by('total_fee')
+    paginator = Paginator(filtered_invoices, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {'customer_invoices': page_obj, 'page_obj': page_obj, 'orderType': orderType,
+               'search_query': search_query, 'is_paginated': page_obj.has_other_pages(),
+               'paginator': paginator}  # Thêm context
+
+    return render(request, 'invoice/customer_invoice_list.html', context)
+
+class CustomerInvoiceDetail(DetailView):
+    model = Invoice
+    template_name = 'invoice/invoice_detail.html'  # tên template hiển thị
+    context_object_name = 'invoice'  # tên biến context để truyền dữ liệu sang template
+
 
 
 from .forms import UpdateInvoiceForm
@@ -1172,7 +1263,6 @@ def direct_payment_view(request):
             parking_record.save()
 
             parking_slot.is_available = True
-            # parking_slot.exit_time = timezone.now()
             parking_slot.save()
 
             car = Car.objects.get(id=parking_record.car.id)
@@ -1202,6 +1292,7 @@ def direct_payment_view(request):
             context = {
                 'invoice': invoice_dict,
                 'parking_record': parking_record,
+                'customer': customer
             }
             return render(request, 'invoice/invoice_modal.html', context)
             # return redirect('display_invoice', parking_record_id=parking_record.id)

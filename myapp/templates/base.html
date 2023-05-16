@@ -79,7 +79,8 @@
         <li class="nav-item dropdown no-arrow">
             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
                aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-user-circle fa-fw text-primary"></i>
+                <img class="rounded-circle" src="{{ user.avatar.url }}" alt="User Avatar" width="30" height="30">
+                <span class="ml-2">{{ user.username }}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                 <a class="dropdown-item">logged in as {{ user.username }}</a>
@@ -104,18 +105,10 @@
             </a>
         </li>
         {% endif %}
-        <li class="nav-item active">
+        <li class="nav-item">
             <a class="nav-link" href="{% url 'profile' %}">
-                <i class="fas fa-user-circle fa-fw text-primary"></i>
-
-
-                <span>{{ user.username }},
-                 {% if user.is_superuser or user.is_admin %}- 
-                 Admin
-            {% else %}     
-             USER 
-            {% endif %}
-            </span>
+                <i class="fas fa-car-alt text-primary"></i>
+                <span style="color: white">My Account</span>
             </a>
         </li>
         {% if user.is_superuser or user.is_admin %}
@@ -143,16 +136,10 @@
                 <span style="color: white">Parking History Management</span>
             </a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'add_vehicle' %}">
-                <i class="fas fa-car-alt text-primary"></i>
-                <span style="color: white">New Car Registration</span>
-            </a>
-        </li>
 
         <li class="nav-item">
             <a class="nav-link" href="{% url 'invoice_list' %}">
-                <i class="fa fa-credit-card" aria-hidden="true"></i>
+                <i class="fa fa-credit-card text-primary" aria-hidden="true"></i>
                 <span style="color: white">Paid Car Invoices</span>
             </a>
         </li>
@@ -164,16 +151,10 @@
             </a>
         </li>
         {% elif user.is_customer %}
-        <li class="nav-item">
+        <li class="nav-item active">
             <a class="nav-link" href="{% url 'show_parking_overview' %}">
                 <i class="fas fa-car-alt text-primary"></i>
                 <span style="color: white">Parking Lot Overview</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'profile' %}">
-                <i class="fas fa-car-alt text-primary"></i>
-                <span style="color: white">My Account</span>
             </a>
         </li>
         <li class="nav-item">
