@@ -3,42 +3,43 @@
 {% block content %}
 <hr>
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-primary">
-                <div class="card-header bg-primary text-white">
-                    <div class="row">
-                        <div class="col-sm-10"><h1>PROFILE</h1></div>
-                        <div class="col-sm-2">
-                            <a href="/users" class="float-right">
-                                <img title="profile image" class="img-circle img-fluid"
-                                     src="http://www.gravatar.com/avatar/28fd20ccec6865e2d5f0e1f4446eb7bf?s=100">
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="text-center">
-                                <img src="http://ssl.gstatic.com/accounts/ui/avatar_2x.png"
-                                     class="avatar img-circle img-thumbnail"
-                                     alt="avatar">
-                                <h6>Upload a different photo...</h6>
-                                <input type="file" class="text-center center-block file-upload">
+        <form enctype="multipart/form-data" action="{% url 'save_profile' %}" method="post" id="registrationForm">
+            {% csrf_token %}
+            <div class="col-lg-8">
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <div class="row">
+                            <div class="col-sm-10"><h1>PROFILE</h1></div>
+                            <div class="col-sm-2">
+                                <a href="/users" class="float-right">
+                                    <img title="profile image" class="img-circle img-fluid"
+                                         src="http://www.gravatar.com/avatar/28fd20ccec6865e2d5f0e1f4446eb7bf?s=100">
+                                </a>
                             </div>
                         </div>
-                        <div class="col-md-8">
-                            <ul class="nav nav-tabs">
-                                <li class="nav-item">
-                                    <a class="nav-link active" data-toggle="tab" href="#home">Information</a>
-                                </li>
-                            </ul>
-                            <div class="tab-content">
-                                <div class="tab-pane active" id="home">
-                                    <form class="form" action="{% url 'save_profile' %}" method="post"
-                                          id="registrationForm">
-                                        {% csrf_token %}
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <img src="{{ user.avatar.url }}"
+                                         class="avatar img-circle img-thumbnail"
+                                         alt="avatar">
+                                    <h6>Upload a different photo...</h6>
+                                    <div class="custom-file">
+                                        <input name="avatar" type="file" class="custom-file-input" id="avatarInput">
+                                        <label class="custom-file-label text-left" for="avatarInput">Choose file</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <ul class="nav nav-tabs">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-toggle="tab" href="#home">Information</a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div class="tab-pane active" id="home">
                                         <div class="form-group">
                                             <label for="first_name">First name</label>
                                             <input type="text" class="form-control" name="first_name" id="first_name"
@@ -69,35 +70,10 @@
                                                    value="{{customer.user.email}}">
                                         </div>
                                         <div class="form-group">
-
                                             <label for="location"><h4>Location</h4></label>
                                             <input type="text" class="form-control" id="location" name="location"
                                                    title="enter a location" value="{{customer.location}}"/>
                                         </div>
-                                        <div class="form-group">
-
-                                            <label for="password"><h4>Password</h4></label>
-                                            <input type="password" class="form-control" name="password"
-                                                   id="password"
-                                                   placeholder="password" title="enter your password.">
-                                        </div>
-                                        <div class="form-group">
-
-                                            <label for="new_password"><h4>New Password (can be blank if dont want to
-                                                change)</h4></label>
-                                            <input type="password" class="form-control" name="new_password"
-                                                   id="new_password"
-                                                   placeholder="new password" title="enter your new password.">
-                                        </div>
-
-                                        <label for="confirm_new_password"><h4> Verify new password (can be blank if dont
-                                            want to
-                                            change)</h4></label>
-                                        <input type="password" class="form-control" name="confirm_new_password"
-                                               id="confirm_new_password"
-                                               placeholder="verify new password"
-                                               title="verify your new password.">
-
                                         <div class="form-group">
                                             <div class="col-xs-12">
                                                 <br>
@@ -108,20 +84,17 @@
                                                         class="glyphicon glyphicon-repeat"></i>
                                                     Reset
                                                 </button>
+                                                <a class="btn btn-lg btn-primary" href="{% url 'password_change' %}">Change Password</a>
                                             </div>
                                         </div>
-                                    </form>
-
-                                    <hr>
-
-                                </div><!--/tab-pane-->
-                            </div>
-                        </div><!--/row-->
+                                    </div><!--/tab-pane-->
+                                </div>
+                            </div><!--/row-->
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </form>
 </div>
 <!--Modal message-->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -139,61 +112,36 @@
         </div>
     </div>
 </div>
-<!--        </div>-->
-<!--    </div>-->
+{% endblock %}
+
+{% block extrascripts %}
 
 <script>
     $(document).ready(function() {
-
-
-    var readURL = function(input) {
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-
-            reader.onload = function (e) {
-                $('.avatar').attr('src', e.target.result);
+        var readURL = function(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('.avatar').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
             }
-
-            reader.readAsDataURL(input.files[0]);
         }
-    }
 
+        $(".custom-file-input").on('change', function(){
+            readURL(this);
+        });
 
-    $(".file-upload").on('change', function(){
-        readURL(this);
-    });
-});
-
-  $(document).ready(function() {
-    // Check if success message exists
-    {% if messages %}
-      {% for message in messages %}
-        {% if message.tags == 'success' %}
-          // If success message exists, show modal
-          $('#myModal').modal('show');
-          // Set modal message to success message content
-          $('#modal-message').text('{{ message }}');
+        {% if messages %}
+          {% for message in messages %}
+            {% if message.tags == 'success' %}
+              $('#myModal').modal('show');
+              $('#modal-message').text('{{ message }}');
+            {% endif %}
+          {% endfor %}
         {% endif %}
-      {% endfor %}
-    {% endif %}
-  });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    });
 
 
 </script>
-{% endblock %}
+{% endblock extrascripts %}

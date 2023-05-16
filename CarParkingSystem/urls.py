@@ -115,6 +115,7 @@ urlpatterns = [
     path('user_car_detail/<int:pk>/', views.UserCarReadView.as_view(), name='user_car_detail'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('save_profile/', views.save_profile, name='save_profile'),
+    path('password-change/', views.password_change_view, name='password_change'),
 
     # User management:
     path('user_list/', user_passes_test(is_admin)(views.UserView.as_view()), name='user_list'),  # id_car
@@ -144,6 +145,7 @@ urlpatterns = [
     path('get_customer_info/',views.get_customer_info,name='get_customer_info'),
     path('direct_payment_view/',views.direct_payment_view,name='direct_payment_view'),
     path('online_payment_view/',views.online_payment_view,name='online_payment_view'),
+    path('accounts/', include('allauth.urls'),name='social'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'myapp.views.custom_page_not_found'

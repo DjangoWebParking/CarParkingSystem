@@ -494,9 +494,9 @@ def showCustomerList(request):
     orderType = request.GET.get('order-list')
     search_query = request.GET.get('search')
     if not orderType:
-        orderType=1
+        orderType = 1
     if not search_query:
-        search_query=''
+        search_query = ''
     customers = Customer.objects.order_by('id')
 
     if search_query:
@@ -929,10 +929,14 @@ class ProfileView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            customer = Customer.objects.get(user=self.request.user)
+            if self.request.user.is_customer and self.request.user.is_authenticated:
+                customer = Customer.objects.get(user=self.request.user)
+                context['customer'] = customer
+            user = self.request.user
         except ObjectDoesNotExist:
             customer = None
-        context['customer'] = customer
+
+        context['user'] = user
         return context
 
 
@@ -942,16 +946,17 @@ def save_profile(request):
             customer = Customer.objects.get(user=request.user)
             customer.first_name = request.POST.get('first_name')
             customer.last_name = request.POST.get('last_name')
+            customer.user.first_name = request.POST.get('first_name')
+            customer.user.last_name = request.POST.get('last_name')
             customer.phone_number = request.POST.get('phone_number')
             customer.card_number = request.POST.get('card_number')
             customer.location = request.POST.get('location')
-            new_password = request.POST.get('new_password')
-            old_password = request.POST.get('password')
-
-            if not new_password is None and old_password == customer.user.password:
-                customer.user.password = new_password
+            avatar = request.FILES.get('avatar')
+            if avatar:
+                customer.user.avatar = avatar
             if customer.reg_date is None:
                 customer.reg_date = timezone.now()
+            customer.user.save()
             customer.save()
             messages.success(request, 'Your profile has been updated successfully.')
 
@@ -960,6 +965,18 @@ def save_profile(request):
             messages.error(request, 'No customer information')
         return redirect('profile')
 
+from django.contrib.auth.forms import PasswordChangeForm
+@login_required
+def password_change_view(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your password has been changed successfully.')
+            return redirect('login')  # Replace 'profile' with the appropriate URL name for the user's profile page
+    else:
+        form = PasswordChangeForm(user=request.user)
+    return render(request, 'home/change_password.html', {'form': form})
 
 class UserView(ListView):
     model = User
@@ -968,7 +985,6 @@ class UserView(ListView):
     def get(self, request):
         users = User.objects.filter(is_customer=True)
         orderType = request.GET.get('order-list')
-
 
         if orderType == '1':
             users = users.order_by('id')
@@ -1181,11 +1197,11 @@ def customer_invoices(request):
 
     return render(request, 'invoice/customer_invoice_list.html', context)
 
+
 class CustomerInvoiceDetail(DetailView):
     model = Invoice
     template_name = 'invoice/invoice_detail.html'  # tên template hiển thị
     context_object_name = 'invoice'  # tên biến context để truyền dữ liệu sang template
-
 
 
 from .forms import UpdateInvoiceForm

@@ -46,6 +46,12 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'imagekit',
     'storages',
+    'django.contrib.sites',  # Bổ sung
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.facebook',
 ]
 
 MIDDLEWARE = [
@@ -143,6 +149,34 @@ DEFAULT_FROM_EMAIL = 'nhom9qlda2223@gmail.com'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SITE_ID = 1
+
+LOGIN_REDIRECT_URL = 'home'  # Đường dẫn sau khi đăng nhập thành công
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': '859484570336-2buunfcpo4gaajduivvgts7hk4sb8prj.apps.googleusercontent.com',
+            'secret': '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',
+            'key': ''
+        }
+    },
+    'facebook': {
+        'APP': {
+            'client_id': 'YOUR_FACEBOOK_APP_ID',
+            'secret': 'YOUR_FACEBOOK_APP_SECRET',
+            'key': ''
+        }
+    }
+}
+
 
 # # Import thư viện google.auth và google.cloud để kết nối đến Firebase Storage
 # import google.auth
