@@ -55,6 +55,7 @@
                         <th scope="col">Car model</th>
                         <th scope="col">Car color</th>
                         <th scope="col">Owner</th>
+                        <th scope="col">Active status</th>
                         <th scope="col">Action</th>
                     </tr>
                     </thead>
@@ -66,7 +67,23 @@
                         <td>{{ car.car_model }}</td>
                         <td>{{ car.car_color }}</td>
                         <td>{{ car.owner.first_name }} {{ car.owner.last_name }}</td>
+                        {% if car.is_active %}
+                        <td><span class="badge badge-success">Đã active</span></td>
+                        {% else %}
+                        <td><span class="badge badge-danger"> Chưa active</span></td>
+                        {% endif  %}
                         <td>
+                            {% if not car.is_active %}
+                            <button type="button" class="bs-modal btn btn-sm btn-light"
+                                    data-form-url="{% url 'active_car' car.pk %}">
+                                <span class="fa fa-pencil"> Active</span>
+                            </button>
+                            {% else %}
+                            <button type="button" class="bs-modal btn btn-sm btn-dark"
+                                    data-form-url="{% url 'inactive_car' car.pk %}">
+                                <span class="fa fa-pencil"> Inactive </span>
+                            </button>
+                            {% endif %}
                             <button type="button" class="bs-modal btn btn-sm btn-primary"
                                     data-toggle="modal" data-target="#car-update-modal"
                                     data-form-url="{% url 'car_view' car.pk %}">

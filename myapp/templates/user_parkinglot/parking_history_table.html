@@ -51,7 +51,7 @@
                         <th> Slot number</th>
                         <th> Start time</th>
                         <th> End time</th>
-                        <th> Status</th>
+                        <th> Fee</th>
                         <th> Paid status</th>
                         <th> Action</th>
                     </tr>
@@ -65,14 +65,24 @@
                         <td>{{ record.parking_slot.slot_number }}</td>
                         <td>{{ record.entry_time }}</td>
                         <td>{{ record.exit_time }}</td>
-                        <td>{{ record.car.is_parking }}</td>
-                        <td>{{ record.is_paid}}</td>
+                        <td>{{ record.total_cost }}</td>
+
+                        {% if record.car.is_paid  %}
+                        <td><span class="badge badge-success">Paid</span></td>
+                        <td><button type="button" class="bs-modal read-book btn btn-sm btn-primary"
+                                    data-form-url="">
+                            <span class="fas fa-comments-dollar">Đã thanh toán.</span>
+                        </button></td>
+                        {% else %}
+                        <td><span class="badge badge-danger">Unpaid</span></td>
                         <td>
                             <button type="button" class="bs-modal read-book btn btn-sm btn-primary"
                                     data-form-url="">
                                 <span class="fas fa-comments-dollar">Pay</span>
                             </button>
                         </td>
+                        {% endif  %}
+
                     </tr>
                     {% endfor %}
                     {% else %}

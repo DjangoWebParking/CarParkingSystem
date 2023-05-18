@@ -25,6 +25,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 # from
 # django.urls import handler404
 from django.conf.urls import handler404, handler500
+from allauth.account import views as account_views
 
 def is_admin(user):
     return user.is_authenticated and user.is_admin
@@ -73,6 +74,8 @@ urlpatterns = [
     path('create_car/', user_passes_test(is_admin)(views.CarCreateView.as_view()), name='create_car'),
     path('update_car/<int:pk>', user_passes_test(is_admin)(views.CarUpdateView.as_view()), name='car_update'),
     path('delete_car/<int:pk>', user_passes_test(is_admin)(views.CarDeleteView.as_view()), name='car_delete'),
+    path('inactive_car/<int:pk>', user_passes_test(is_admin)(views.CarInactiveView.as_view()), name='inactive_car'),
+    path('active_car/<int:pk>', user_passes_test(is_admin)(views.CarActiveView.as_view()), name='active_car'),
 
     path('customer_list/', user_passes_test(is_admin)(views.showCustomerList), name='customer_list'),
     path('customer_list/<int:pk>', user_passes_test(is_admin)(views.CustomerDetailView.as_view()),
@@ -145,7 +148,10 @@ urlpatterns = [
     path('get_customer_info/',views.get_customer_info,name='get_customer_info'),
     path('direct_payment_view/',views.direct_payment_view,name='direct_payment_view'),
     path('online_payment_view/',views.online_payment_view,name='online_payment_view'),
-    path('accounts/', include('allauth.urls'),name='social'),
+
+    path('accounts/', include('allauth.urls'),name='provider_login_url'),
+    path('accounts/google/login/', account_views.LoginView.as_view(template_name='account/socialaccount/google_login.html'), name='google_login'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'myapp.views.custom_page_not_found'

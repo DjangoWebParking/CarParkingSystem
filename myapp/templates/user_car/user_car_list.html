@@ -10,10 +10,38 @@
         </ol>
         <div class="card mb-3">
             <div class="card-header">
-                <button id="create-user-car" type="button" class="bs-modal btn btn-sm btn-primary"
-                    data-form-url="{% url 'create_user_car' %}">
-                    <span class="fa fa-plus"> Register car</span>
-                </button>
+
+                <div class="row">
+                    <div class="col-sm-9">
+                        <form method="GET" action="{% url 'user_car_list' %}">
+                            <div class="form-inline d-flex align-items-center">
+                                <button id="create-user-car" type="button" class="bs-modal btn btn-sm btn-primary"
+                                        data-form-url="{% url 'create_user_car' %}">
+                                    <span class="fa fa-plus"> Register car</span>
+                                </button>
+
+                                <select class="form-control mr-2" id="OrderFormControlSelect" name="order-list" value="{{orderType}}">
+                                    <option value="1" {% if orderType == '1' %}selected{% endif %}>Sort by id </option>
+                                    <option value="2" {% if orderType == '2' %}selected{% endif %}>Sort by car name
+                                    </option>
+                                    <option value="3" {% if orderType == '3' %}selected{% endif %}>Sort by date register
+                                    </option>
+                                    <option value="4" {% if orderType == '4' %}selected{% endif %}>Sort by owner name
+                                    </option>
+                                </select>
+
+                                <button type="submit" class="btn btn-sm btn-secondary mr-2" id="sortButton">
+                                    Sort
+                                </button>
+                                <input type="text" class="form-control" name="search" placeholder="Search"
+                                       value="{{ search_query }}">
+                                <button type="submit" class="btn btn-sm btn-primary ml-2" id="searchButton">
+                                    Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
             <div class="card-header">
                 <i class="fas fa-table"></i>
@@ -34,7 +62,6 @@
                             <th>Kiểu xe</th>
                             <th>Màu xe</th>
                             <th>Ngày đăng ký</th>
-                            <th>Ảnh</th>
                             <th colspan="2">Trạng thái</th>
                             <th>Action</th>
                         </tr>
@@ -49,9 +76,6 @@
                             <td>{{ car.car_model }}</td>
                             <td>{{ car.car_color }}</td>
                             <td>{{ car.reg_date }}</td>
-
-                            <td><img style="width:80px;height:120px" src="{{ car.image.url }}" alt="Car image"></td>
-
 
                             {% if car.is_active %}
                             <td><span class="badge badge-success">Đã phê duyệt</span></td>

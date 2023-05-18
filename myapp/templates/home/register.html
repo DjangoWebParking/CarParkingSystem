@@ -3,6 +3,7 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <!------ Include the above in your HEAD tag ---------->
 {% load static %}
+{% load socialaccount %}
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
 <!-- css -->
 <link rel="stylesheet" href="{% static 'home/register/css/style.css' %}">
@@ -13,9 +14,11 @@
         <article class="card-body mx-auto" style="max-width: 400px;">
             <h4 class="card-title mt-3 text-center">Create Your Account Here</h4>
             <p class="text-center">Get started with your free account</p>
+
             <p>
-                <a  href="{% provider_login_url 'google' %}" class="btn btn-block btn-google"> <i class="fab fa-twitter"></i>   Đăng nhập bằng Google</a>
-                <a href="{% provider_login_url 'facebook' %}" class="btn btn-block btn-facebook"> <i class="fab fa-facebook-f"></i>   Đăng nhập bằng Facebook</a>
+                <a href="{% url 'google_login' %}" class="btn btn-block btn-danger">
+                    <i class="fab fa-google"></i> Đăng nhập bằng Google
+                </a>
             </p>
             <p class="divider-text">
                 <span class="bg-light">OR</span>

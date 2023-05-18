@@ -1,10 +1,4 @@
 {% extends 'base.html' %}
-<head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"
-          xmlns="http://www.w3.org/1999/html">
-
-</head>
 
 {% block content %}
 <body>
@@ -27,35 +21,38 @@
                     {% if user.is_admin %}
                     <div>
                         <!-- Thêm form thanh toán trực tiếp -->
-                        <form method="post" action="{% url 'direct_payment_view' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="parking_slot_id" value="{{ parking_slot.id }}">
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <span class="fa fa-check"> Thanh toán trực tiếp </span>
-                            </button>
-                        </form>
+                        <button type="button" data-slot-pk="{{ parking_slot.pk }}" class="btn btn-sm btn-primary" id="openConfirmationDirectPayModalBtn">
+                            <span class="fa fa-check"> Thanh toán trực tiếp </span>
+                        </button>
                     </div>
+                    <br>
                     <div>
+                        <button type="button" data-slot-pk="{{ parking_slot.pk }}" class="btn btn-sm btn-primary" id="openConfirmationOnlinePayModalBtn">
+                            <span class="fa fa-check"> Thanh toán sau </span>
+                        </button>
                         <!-- Thêm form thanh toán sau -->
-                        <form method="post" action="{% url 'online_payment_view' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="parking_slot_id" value="{{ parking_slot.id }}">
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <span class="fa fa-check"> Thanh toán sau </span>
-                            </button>
-                        </form>
                     </div>
                     {% endif %}
 
                     {% else %}
                     <p>Parking type: {{ parking_slot.get_parking_type_display }}</p>
-                    <p>Cost per day: {{ parking_slot.cost_per_day }}</p>
+                    <p>Cost per day: {{ parking_slot.cost_per_hour }}</p>
                     <p><span class="badge badge-danger">Empty</span></p>
+                        {% if cars %}
                     <button type="button" class="bs-modal reserve-slot btn btn-sm btn-primary"
                             data-form-url="{% url 'reserve_slot' %}"
                             data-slot-number="{{ parking_slot.slot_number }}">
-                        <span class="fa fa-plus"> Đặt chỗ </span>
+                        <span class="fa fa-plus" > Đặt chỗ </span>
                     </button>
+                        {% else %}
+                            {% if request.user.is_customer %}
+                     <p class="text-danger">Bạn chưa đăng ký xe nào</p>
+                         <button type="button" class="btn btn-sm btn-primary"
+                            data-slot-number="{{ parking_slot.slot_number }}">
+                             <a href="{% url 'user_car_list' %}" style="color: white;"><span class="fa fa-plus">Vào trang đăng ký</span></a>
+                        </button>
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -63,6 +60,10 @@
         {% if forloop.counter0|add:1|divisibleby:3 or forloop.last %}
     </div>
     {% endif %}
+    {% empty %}
+    <div class="text-center">
+        <p class="text-muted">Không có xe nào trong bãi đỗ xe.</p>
+    </div>
     {% endfor %}
 </div>
 
@@ -105,46 +106,75 @@
     </div>
 </div>
 
-<div class="modal fade" id="exitModal" tabindex="-1" role="dialog" aria-labelledby="exitModalLabel"
+<!-- Thêm modal xác nhận -->
+<div class="modal" id="confirmationModal1" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
+            <form method="post" action="{% url 'direct_payment_view' %}">
+                {% csrf_token %}
+                <input type="hidden" name="parking_slot_id" value="{{ parking_slot.id }}">
             <div class="modal-header">
-                <h5 class="modal-title" id="exitModalLabel">Xe đi ra</h5>
+                <h5 class="modal-title" id="confirmationModalLabel">Xác nhận thanh toán {{ parking_slot.id }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <p>Đặt chỗ tại bãi số
-                    <strong> {{ parking_slot.slot_number }}</strong></p>
-                <p>Thông tin khách hàng:</p>
-                <p>Tên: <span id="customerName"></span></p>
-                <p>Email: <span id="customerEmail"></span></p>
-                <p>Số điện thoại: <span id="customerPhone"></span></p>
-                <div class="payment-options">
-                    <p>Chọn phương thức thanh toán:</p>
-                    <button type="button" class="btn btn-primary direct-payment-btn">Thanh toán trực tiếp</button>
-                    <button type="button" class="btn btn-primary transfer-payment-btn">Thanh toán chuyển khoản</button>
-                </div>
+                <p>Bạn có chắc chắn muốn thanh toán trực tiếp?</p>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-primary" id="confirmDirectPaymentBtn">Xác nhận</button>
+            </div>
+            </form>
         </div>
     </div>
 </div>
-{% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li
-            {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}
-    </li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endblock %}
 
-{% block extrascripts %}
-<script>
-$(document).ready(function () {
+<div class="modal" id="confirmationModal2" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel2"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post" action="{% url 'online_payment_view' %}">
+                {% csrf_token %}
+                <input type="hidden" name="parking_slot_id" value="{{ parking_slot.id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel2">Xác nhận thanh toán</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn thanh toán online sau?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="confirmOnlinePaymentBtn">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="fixed-top m-3">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }} alert" {% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+</body>
+
+
+{% block javascript %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript">
+
+  $(document).ready(function () {
+
+
     $(".reserve-slot").each(function () {
         $(this).modalForm({ formURL: $(this).data("form-url") });
     });
@@ -155,7 +185,6 @@ $(document).ready(function () {
         $("#reservationModal strong").text(slotNumber); // Đặt giá trị số slot vào modal
         $("#reservationModal input[name=slot_number]").val(slotNumber); // Đặt giá trị số slot vào input của form
     });
-
 
     $(".exit-btn").click(function () {
         var parkingSlotPk = $(this).data("pk");
@@ -178,45 +207,29 @@ $(document).ready(function () {
         });
     });
 
+     $("#openConfirmationDirectPayModalBtn").click(function () {
+        var slotPk = $(this).data("slot-pk");
+        $("#confirmationModal1 input[name=parking_slot_id]").val(slotPk);
+        $('#confirmationModal1').modal('show');
+     });
+     $("#confirmDirectPaymentBtn").click(function () {
+       $('#confirmationModal1').modal('hide');
+     });
 
-
+      $("#openConfirmationOnlinePayModalBtn").click(function () {
+        var slotPk = $(this).data("slot-pk");
+        $("#confirmationModal2 input[name=parking_slot_id]").val(slotPk);
+        $('#confirmationModal2').modal('show');
+     });
+     $("#confirmOnlinePaymentBtn").click(function () {
+       $('#confirmationModal2').modal('hide');
+     });
 
 });
 
-
-
-</script>
-
-</body>
-{% endblock %}
-
-{% block javascript %}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script type="text/javascript">
-  $(document).ready(function () {
-    $(".card").click(function () {
-      var slotPk = $(this).data("slot-pk");
-      $.ajax({
-        url: "{% url 'get_parking_record' 0 %}".replace('0', slotPk),
-        success: function (data) {
-          console.log(data)
-          if ('error' in data) {
-            alert("Slot nay trong");
-          } else {
-            $.ajax({
-              url: "{% url 'parking_record_detail' 0 %}".replace('0', data.parking_record_id),
-              success: function (data) {
-                $('#myModal .modal-content').html(data.html);
-                $('#myModal').modal('show');
-              }
-            })
-          }
-        }
-      });
-    });
-  });
 </script>
 {% endblock %}
 
+{% endblock %}
 
 

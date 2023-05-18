@@ -14,18 +14,15 @@
           <div class="col-sm-9">
             <form method="GET" action="{% url 'user_list' %}">
               <div class="form-inline d-flex align-items-center">
-                <button type="button" class="bs-modal btn ml-2 mr-2 btn-primary"
-                        data-form-url="{% url 'create_customer' %}">
-                  <span class="fa fa-plus mr-2 "> Create user</span>
-                </button>
-
                 <select class="form-control mr-2" id="OrderFormControlSelect" name="order-list" value="{{orderType}}">
                   <option value="1" {% if orderType == '1' %}selected{% endif %}>Sort by id </option>
                   <option value="2" {% if orderType == '2' %}selected{% endif %}>Sort by username
                   </option>
                   <option value="3" {% if orderType == '3' %}selected{% endif %}>Sort by date join
                   </option>
-                  <option value="4" {% if orderType == '4' %}selected{% endif %}>Sort by is active
+                  <option value="4" {% if orderType == '4' %}selected{% endif %}>Filter active user
+                  </option>
+                  <option value="5" {% if orderType == '4' %}selected{% endif %}>Filter inactive user
                   </option>
                 </select>
 
@@ -60,7 +57,7 @@
             <th> No </th>
             <th> Username </th>
             <th> Date Join</th>
-            <th> Is Active </th>
+            <th> Status </th>
           </tr>
           </thead>
           <tbody>
@@ -69,7 +66,11 @@
             <td>{{ forloop.counter }}</td>
             <td>{{ u.username }}</td>
             <td>{{ u.date_joined }}</td>
-            <td>{{ u.is_active }}</td>
+            {% if u.is_active %}
+            <td><span class="badge badge-success">Đã active</span></td>
+            {% else %}
+            <td><span class="badge badge-danger"> Chưa active</span></td>
+            {% endif  %}
             <td>
               <button type="button" class="read-user btn btn-sm btn-primary"
                       data-form-url="{% url 'user_view' u.pk %}">
@@ -139,4 +140,4 @@
     </div>
   </div>
 </div>
-  {% endblock %}
+{% endblock %}

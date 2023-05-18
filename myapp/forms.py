@@ -82,13 +82,13 @@ class CustomerForm(BSModalModelForm):
         self.fields['phone_number'].widget.attrs = {
             'class': 'form-control col-md-6'
         }
-        self.fields['comment'].widget.attrs = {
+        self.fields['location'].widget.attrs = {
             'class': 'form-control col-md-6'
         }
 
     class Meta:
         model = Customer
-        fields = ('first_name', 'last_name', 'phone_number', 'card_number','comment')
+        fields = ('first_name', 'last_name', 'phone_number', 'card_number', 'location')
 
 
 class UserForm(BSModalModelForm):
@@ -116,9 +116,21 @@ class UserForm(BSModalModelForm):
 
 
 # class UserActiveForm(Mode)
+class CarFormMixin(forms.ModelForm):
+    def clean_license_plate(self):
+        license_plate = self.cleaned_data['license_plate']
+        existing_car = Car.objects.filter(license_plate=license_plate).exists()
+        if existing_car:
+            raise forms.ValidationError('This license plate is already in use.')
+        if not license_plate[:2].isdigit():
+            raise forms.ValidationError('License plate must start with two digits.')
+        if len(license_plate) > 12:
+            raise forms.ValidationError('License plate must be a maximum of 12 characters.')
+        return license_plate
 
-class CarForm(BSModalModelForm):
+class CarForm(CarFormMixin, BSModalModelForm):
     # Loi tham so nay forms.ModelForm
+    owner = forms.ModelChoiceField(queryset=Customer.objects.all(), label='Owner', widget=forms.Select(attrs={'class': 'form-control col-md-6'}),to_field_name='__str__')
     def __init__(self, *args, **kwargs):
         super(CarForm, self).__init__(*args, **kwargs)
         self.fields['license_plate'].widget.attrs = {
@@ -130,13 +142,40 @@ class CarForm(BSModalModelForm):
         self.fields['car_color'].widget.attrs = {
             'class': 'form-control col-md-6'
         }
-
     class Meta:
         model = Car
         exclude = ['timestamp']
         fields = ['license_plate',
-                  'car_model', 'car_color', 'owner']
+                  'car_model', 'car_color', 'owner' , 'image']
 
+class CreateCarForm(BSModalModelForm):
+    owner = forms.ModelChoiceField(queryset=Customer.objects.all(), label='Owner', widget=forms.Select(attrs={'class': 'form-control col-md-6'}),to_field_name='__str__')
+    def __init__(self, *args, **kwargs):
+        super(CreateCarForm, self).__init__(*args, **kwargs)
+        self.fields['license_plate'].widget.attrs = {
+            'class': 'form-control col-md-6'
+        }
+        self.fields['car_model'].widget.attrs = {
+            'class': 'form-control col-md-6'
+        }
+        self.fields['car_color'].widget.attrs = {
+            'class': 'form-control col-md-6'
+        }
+    def clean_license_plate(self):
+        license_plate = self.cleaned_data['license_plate']
+        existing_car = Car.objects.filter(license_plate=license_plate).first()
+        if existing_car:
+            raise forms.ValidationError('This license plate is already in use.')
+        if not license_plate[:2].isdigit():
+            raise forms.ValidationError('License plate must start with two digits.')
+        if len(license_plate) > 12:
+            raise forms.ValidationError('License plate must be a maximum of 12 characters.')
+        return license_plate
+    class Meta:
+        model = Car
+        exclude = ['timestamp']
+        fields = ['license_plate',
+                  'car_model', 'car_color', 'owner' , 'image']
 
 class CarUpdateForm(forms.ModelForm):
     owner = forms.ModelChoiceField(queryset=Customer.objects.all())

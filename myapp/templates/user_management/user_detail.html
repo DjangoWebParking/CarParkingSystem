@@ -8,37 +8,48 @@
 </div>
 
 <div class="modal-body">
-    <div class="">
-        <strong> No: </strong>
-        {{ user.id }}
-    </div>
-    <div class="">
-        <strong> Fullname </strong>
-        {{ user.first_name }}  {{user.last_name }}
-    </div>
-    <div class="">
-        <strong> Username / Email </strong>
-        {{ user.email }}
-    </div>
-    <div class="">
-        <strong> Last login </strong>
-        {{ user.last_login }}
-    </div>
-    <div class="">
-        <strong> Register Date </strong>
-        {{ customer.date_joined }}
-    </div>
+    <div id="content-wrapper">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="avatar" class="img-fluid">
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <div class="">
+                        <strong> No: </strong>
+                        {{ user.id }}
+                    </div>
+                    <div class="">
+                        <strong> Fullname </strong>
+                        {{ user.first_name }} {{user.last_name }}
+                    </div>
+                    <div class="">
+                        <strong> Username / Email </strong>
+                        {{ user.email }}
+                    </div>
+                    <div class="">
+                        <strong> Last login </strong>
+                        {{ user.last_login }}
+                    </div>
+                    <div class="">
+                        <strong> Register Date </strong>
+                        {{ user.date_joined }}
+                    </div>
 
-    <div class="">
-        <strong> Is Active: </strong>
-        {% if user.is_active %}
-        {{ "Da kich hoat" }}
-        {% else %}
-        {{ "Chua kich hoat" }}
-        {% endif %}
+                    <div class="">
+                        <strong> Status: </strong>
+                        {% if user.is_active %}
+                        {{ "Da kich hoat" }}
+                        {% else %}
+                        {{ "Chua kich hoat" }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-
 </div>
 
 <div class="modal-footer">

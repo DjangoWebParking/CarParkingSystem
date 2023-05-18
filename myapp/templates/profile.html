@@ -38,6 +38,7 @@
                                         <a class="nav-link active" data-toggle="tab" href="#home">Information</a>
                                     </li>
                                 </ul>
+                                {% if user.is_customer %}
                                 <div class="tab-content">
                                     <div class="tab-pane active" id="home">
                                         <div class="form-group">
@@ -50,6 +51,12 @@
                                             <label for="last_name">Last name</label>
                                             <input type="text" class="form-control" name="last_name" id="last_name"
                                                    title="Enter your last name if any." value="{{customer.last_name}}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Tên đăng nhập</label>
+                                            <input type="text" class="form-control" name="username" id="username"
+                                                   placeholder="username" title="Enter your username."
+                                                   value="{{user.username}}">
                                         </div>
                                         <div class="form-group">
                                             <label for="phone">Phone</label>
@@ -67,7 +74,7 @@
                                             <label for="email">Email</label>
                                             <input type="email" class="form-control" name="email" id="email"
                                                    placeholder="you@email.com" title="Enter your email."
-                                                   value="{{customer.user.email}}">
+                                                   value="{{ customer.user.email}}">
                                         </div>
                                         <div class="form-group">
                                             <label for="location"><h4>Location</h4></label>
@@ -89,6 +96,49 @@
                                         </div>
                                     </div><!--/tab-pane-->
                                 </div>
+                                {% else %}
+                                <div class="tab-content">
+                                    <div class="tab-pane active" id="home">
+                                        <div class="form-group">
+                                            <label for="first_name">First name</label>
+                                            <input type="text" class="form-control" name="first_name" id="first_name"
+                                                   title="Enter your first name if any."
+                                                   value="{{user.first_name}}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="last_name">Last name</label>
+                                            <input type="text" class="form-control" name="last_name" id="last_name"
+                                                   title="Enter your last name if any." value="{{user.last_name}}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Username</label>
+                                            <input type="text" class="form-control" name="username" id="username"
+                                                   placeholder="username" title="Enter your username."
+                                                   value="{{user.username}}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            <input type="email" class="form-control" name="email" id="email"
+                                                   placeholder="you@email.com" title="Enter your email."
+                                                   value="{{user.email}}">
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-xs-12">
+                                                <br>
+                                                <button class="btn btn-lg btn-success" type="submit"><i
+                                                        class="glyphicon glyphicon-ok-sign"></i> Save
+                                                </button>
+                                                <button class="btn btn-lg" type="reset"><i
+                                                        class="glyphicon glyphicon-repeat"></i>
+                                                    Reset
+                                                </button>
+                                                <a class="btn btn-lg btn-primary" href="{% url 'password_change' %}">Change Password</a>
+                                            </div>
+                                        </div>
+                                    </div><!--/tab-pane-->
+                                </div>
+                                {% endif %}
+
                             </div><!--/row-->
                         </div>
                     </div>
@@ -115,6 +165,31 @@
 {% endblock %}
 
 {% block extrascripts %}
+{% if messages %}
+{% for message in messages %}
+<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
+    <div class="toast-header">
+        <strong class="mr-auto">{{ message.tags }}</strong>
+        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="toast-body">
+        {{ message }}
+    </div>
+</div>
+{% endfor %}
+
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+<script>
+        $('.toast').toast('show');
+</script>
+
+{% endif %}
+
+
 
 <script>
     $(document).ready(function() {

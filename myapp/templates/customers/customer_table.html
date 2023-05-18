@@ -82,11 +82,12 @@
                                     data-form-url="{% url 'customer_update' customer.pk %}">
                                 <span class="fa fa-pencil"> Edit</span>
                             </button>
-
+                            {% if customer.user is not None %}
                             <button type="button" class="bs-modal delete-book btn btn-sm btn-danger"
                                     data-form-url="{% url 'customer_delete' customer.pk %}">
                                 <span class="fa fa-trash"> Delete</span>
                             </button>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}
